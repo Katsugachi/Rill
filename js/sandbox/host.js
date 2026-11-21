@@ -61,6 +61,10 @@
   }
 
   var parentWin = window.parent;
+  // Only run inside an opaque-origin sandboxed frame. If this page is opened
+  // directly or framed without `sandbox`, it would share Rill's origin (and
+  // its IndexedDB), so refuse to execute anything.
+  if (self.origin !== 'null' || parentWin === window) return;
   window.addEventListener('message', function (e) {
     if (e.source !== parentWin) return;
     var d = e.data || {};

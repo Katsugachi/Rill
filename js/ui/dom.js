@@ -7,7 +7,7 @@ export function h(tag, attrs = {}, ...children) {
     else if (k === 'text') n.textContent = v;
     else if (k.startsWith('on') && typeof v === 'function') n.addEventListener(k.slice(2), v);
     else if (k === 'dataset') Object.assign(n.dataset, v);
-    else if (/^(href|src|srcdoc|action|formaction|style)$/i.test(k)) throw new Error('Use explicit, validated assignment for ' + k);
+    else if (/^(on.*|href|src|srcdoc|action|formaction|style)$/i.test(k)) throw new Error('Use explicit, validated assignment for ' + k);
     else n.setAttribute(k, v === true ? '' : String(v));
   }
   for (const c of children.flat()) if (c != null && c !== false) n.append(c);

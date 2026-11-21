@@ -20,10 +20,12 @@ import {
 env.allowLocalModels = false;
 env.useBrowserCache = true;
 const ortBase = new URL('../../vendor/ort/', import.meta.url).href;
-env.backends.onnx.wasm.wasmPaths = {
-  mjs: ortBase + 'ort-wasm-simd-threaded.asyncify.mjs',
-  wasm: ortBase + 'ort-wasm-simd-threaded.asyncify.wasm',
-};
+// The asyncify build carries the WebGPU EP; the plain build has the full CPU
+// kernel set (incl. GatherBlockQuantized, which LFM3's q4 embeddings need).
+function setRuntime(wantDevice) {
+  const flavour = wantDevice === 'webgpu' ? 'ort-wasm-simd-threaded.asyncify' : 'ort-wasm-simd-threaded';
+  env.backends.onnx.wasm.wasmPaths = { mjs: ortBase + flavour + '.mjs', wasm: ortBase + flavour + '.wasm' };
+}
 
 // WebGPU graphs for LFM3 must be prefilled in chunks of at most 256 tokens.
 const PREFILL_CHUNK = 256;
@@ -55,6 +57,7 @@ async function load({ model: modelId, device: wantDevice, dtype }) {
     }
   };
   try {
+    setRuntime(wantDevice);
     post({ type: 'status', text: 'Fetching tokenizer' });
     tokenizer = await AutoTokenizer.from_pretrained(modelId, { progress_callback: progress });
     post({ type: 'status', text: 'Fetching model weights' });

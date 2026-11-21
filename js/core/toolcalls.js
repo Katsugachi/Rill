@@ -67,7 +67,7 @@ function parseXmlCall(body, schemas) {
   const fn = /<function=([^>\n]+)>([\s\S]*?)(?:<\/function>|$)/.exec(body);
   if (!fn) return null;
   const name = fn[1].trim();
-  const props = schemas?.[name]?.parameters?.properties || {};
+  const props = (schemas?.[name]?.function ?? schemas?.[name])?.parameters?.properties || {};
   const args = {};
   const re = /<parameter=([^>\n]+)>\n?([\s\S]*?)\n?<\/parameter>/g;
   let m;
