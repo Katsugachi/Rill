@@ -192,6 +192,7 @@ async function openChat(id) {
 }
 
 async function deleteChat(id) {
+  if (state.busy && state.chat?.id === id) { toast('Stop Rill before deleting this chat.'); return; }
   await store.del('chats', id);
   for (const p of state.plans.filter((x) => x.chatId === id)) await store.del('plans', p.id);
   state.plans = state.plans.filter((x) => x.chatId !== id);
