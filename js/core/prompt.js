@@ -114,8 +114,10 @@ export function summaryPrompt(plan) {
 const FILLER = /(let me know if (you|there)|how (can|may) i (help|assist)|what can i (help|do for) you|what(?:'|’)?s on your mind|anything (specific|else) (you|i can)|is there anything else|feel free to ask|i(?:'|’)?d be happy to help)/i;
 export function stripFiller(text) {
   if (!text) return text;
-  const m = /(?:^|[.!?]\s+|\n)([^.!?\n"“”`]{1,80}[.!?]*)\s*$/.exec(text);
+  // Only a sentence that follows a finished sentence counts as a closer; a line
+  // after a heading or a colon is the answer itself.
+  const m = /[.!?]\s+([^.!?\n"“”`]{1,80}[.!?]*)\s*$/.exec(text);
   if (!m || !FILLER.test(m[1])) return text;
-  const out = text.slice(0, m.index + m[0].indexOf(m[1])).trimEnd();
+  const out = text.slice(0, m.index + 1);
   return out || text;
 }

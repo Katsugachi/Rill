@@ -36,8 +36,10 @@ test('strips banned filler sentences but never empties a reply', () => {
   assert.equal(stripFiller('Hey Adrian! What can I help you with today?'), 'Hey Adrian!');
   const explain = 'The phrase "how can I help you" is a greeting. It is formal.';
   assert.equal(stripFiller(explain), explain);
-  const code = '```py\n# Ask the user.\nname = input()\n```\nLet me know if you need anything else.';
-  assert.equal(stripFiller(code), '```py\n# Ask the user.\nname = input()\n```');
+  const code = '```py\n# Ask the user.\nname = input()\n```\nDone. Let me know if you need anything else.';
+  assert.equal(stripFiller(code), '```py\n# Ask the user.\nname = input()\n```\nDone.');
+  const translation = 'English translation:\nHow can I help you?';
+  assert.equal(stripFiller(translation), translation);
   const quoted = 'A banned line is "Let me know if you need anything else."';
   assert.equal(stripFiller(quoted), quoted);
 });
