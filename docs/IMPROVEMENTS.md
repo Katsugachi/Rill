@@ -31,7 +31,7 @@ Decisions made while building Rill, problems found along the way, and what to do
   out because Rill has none of them. Three one-line examples anchor the voice, because a 1.7B model
   copies examples more reliably than it follows rules.
   The model still adds banned filler such as "What's on your mind?" in roughly half of small-talk
-  replies, so `stripFiller()` removes those sentences from what is shown.
+  replies, so `stripFiller()` drops a short, unquoted closing sentence of that kind from what is shown.
 
 ## Problems found and fixed while building
 

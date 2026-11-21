@@ -108,13 +108,14 @@ export function summaryPrompt(plan) {
   ].join('\n');
 }
 
-// A 1.7B model still slips into assistant filler now and then, whatever the
-// prompt says. This removes the sentences the personality bans outright, and
-// leaves the reply alone if nothing else would remain.
-const FILLER = /(let me know if (you|there)|how (can|may) i (help|assist)|what can i (help|do for) you|what(?:'|’)?s on your mind|anything (specific|else) (you|i can)|is there anything else|feel free to ask|i(?:'|’)?d be happy to help|no problem at all|i apologi[sz]e for the confusion)/i;
+// A 1.7B model still tacks assistant filler onto the end of a reply now and
+// then, whatever the prompt says. This drops a short, unquoted closing sentence
+// that the personality bans outright. Everything before it is left untouched.
+const FILLER = /(let me know if (you|there)|how (can|may) i (help|assist)|what can i (help|do for) you|what(?:'|’)?s on your mind|anything (specific|else) (you|i can)|is there anything else|feel free to ask|i(?:'|’)?d be happy to help)/i;
 export function stripFiller(text) {
-  if (!text || !FILLER.test(text)) return text;
-  const kept = text.split(/(?<=[.!?])\s+/).filter((sentence) => !FILLER.test(sentence));
-  const out = kept.join(' ').trim();
+  if (!text) return text;
+  const m = /(?:^|[.!?]\s+|\n)([^.!?\n"“”`]{1,80}[.!?]*)\s*$/.exec(text);
+  if (!m || !FILLER.test(m[1])) return text;
+  const out = text.slice(0, m.index + m[0].indexOf(m[1])).trimEnd();
   return out || text;
 }
