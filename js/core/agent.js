@@ -25,7 +25,8 @@ export function toTemplate(messages, budget = HISTORY_CHARS) {
     } else if (m.role === 'tool') t = { role: 'tool', content: m.content };
     else continue;
     const size = (t.content || '').length + JSON.stringify(t.tool_calls || '').length;
-    if (used + size > budget && out.length) break;
+    // Always keep the latest user request and its tool exchange; trim only older turns.
+    if (used + size > budget && out.some((x) => x.role === 'user')) break;
     used += size;
     out.unshift(t);
   }
