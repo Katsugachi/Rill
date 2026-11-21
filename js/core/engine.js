@@ -31,12 +31,21 @@ export class Engine extends EventTarget {
     this.ready = false;
     this.worker = new Worker(new URL('./llm-worker.js', import.meta.url), { type: 'module', name: 'rill-llm' });
     this.worker.addEventListener('message', (e) => this.onMessage(e.data));
-    this.worker.addEventListener('error', (e) => this.emit('error', { error: e.message || 'Worker crashed' }));
+    this.worker.addEventListener('error', (e) => this.fail(e.message || 'Worker crashed'));
     return new Promise((resolve, reject) => {
       this._loadResolve = resolve;
       this._loadReject = reject;
       this.worker.postMessage({ type: 'load', model: MODEL_ID, device, dtype });
     });
+  }
+
+  // A crashed worker never answers, so settle everything that is waiting on it.
+  fail(error) {
+    this.ready = false;
+    this.emit('error', { error });
+    this._loadReject?.(new Error(error));
+    for (const p of this.pending.values()) p.reject(new Error(error));
+    this.pending.clear();
   }
 
   onMessage(msg) {
