@@ -103,8 +103,7 @@ with sync_playwright() as p:
     page.set_input_files("#fileInput", files=[{"name": "bin.txt", "mimeType": "text/plain", "buffer": b"ab\x00\x01cd"}])
     page.wait_for_timeout(300)
     check(any("binary" in t for t in page.locator(".toast.error").all_inner_texts()), "upload: binary rejected")
-    if page.get_attribute("#shell", "data-panel") != "open": page.click("#togglePanel")
-    page.click("#tab-files")
+    page.click("#navFiles")
     check(page.locator("#pane-files .card").count() == 1, "upload: file listed in panel")
     page.screenshot(path=f"{SHOTS}/05-files.png")
 
@@ -129,6 +128,15 @@ with sync_playwright() as p:
     r.goto(URL); r.wait_for_selector("#loadCard"); r.wait_for_timeout(500)
     check(r.inner_text("#statusText") == "Not loaded", "status reads Not loaded before loading")
     r.screenshot(path=f"{SHOTS}/00-welcome-unloaded.png")
+    # Dark theme
+    d = browser.new_page(viewport={"width": 1440, "height": 900})
+    d.goto(URL + "?mock"); d.evaluate("localStorage.setItem('rill.settings', JSON.stringify({theme:'dark'}))"); d.reload()
+    d.wait_for_selector("#statusPill[data-state=ready]")
+    check(d.evaluate("() => document.documentElement.dataset.theme") == "dark", "dark theme applies from settings")
+    d.wait_for_timeout(400); d.screenshot(path=f"{SHOTS}/12-dark-home.png")
+    d.fill("#input", "Make a plan for my weekend project"); d.keyboard.press("Enter")
+    wait_until(d, "() => window.rill.state.plans.at(-1)?.status === 'done'", 30000); d.wait_for_timeout(3500)
+    d.screenshot(path=f"{SHOTS}/13-dark-plan.png")
 
     real = [e for e in errors if "favicon" not in e]
     check(not real, "no console errors: " + json.dumps(real[:5]))

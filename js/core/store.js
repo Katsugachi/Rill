@@ -33,7 +33,7 @@ export const store = {
 };
 
 const SETTINGS_KEY = 'rill.settings';
-export const DEFAULT_SETTINGS = { name: '', thinking: false, webReader: false, autoRun: true, device: 'auto', maxSteps: 40 };
+export const DEFAULT_SETTINGS = { name: '', thinking: false, webReader: false, autoRun: true, device: 'auto', theme: 'light', maxSteps: 40 };
 export function loadSettings() {
   try { return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') }; } catch { return { ...DEFAULT_SETTINGS }; }
 }

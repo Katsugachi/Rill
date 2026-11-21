@@ -5,14 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.wikipedia.org https://r.jina.ai; img-src 'self' data: blob:; style-src 'self'; font-src 'self'; frame-src 'self'; media-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; require-trusted-types-for 'script'; trusted-types default">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#0f1226">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#ffffff">
 <meta name="description" content="Rill — a calm, private AI agent that runs entirely in your browser on WebGPU.">
 <title>Rill</title>
 <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/rill.css">
 <script src="js/trusted-types.js"></script>
+<script src="js/theme.js"></script>
 <script type="module" src="js/app.js"></script>
 </head>
 <body>
@@ -42,10 +43,9 @@
   <main class="main" id="main">
     <div class="backdrop" aria-hidden="true"></div>
     <button class="corner corner-left" id="openSidebar" type="button" aria-label="Show sidebar" aria-controls="sidebar"><span class="i i-sidebar" aria-hidden="true"></span></button>
-    <button class="corner corner-right" id="togglePanel" type="button" aria-label="Plans, files and notes" aria-controls="panel" aria-expanded="false"><span class="i i-panel" aria-hidden="true"></span></button>
 
     <div class="column">
-      <header class="topbar"><h1 class="chat-title" id="chatTitle">New chat</h1></header>
+      <h1 class="sr-only" id="chatTitle">New chat</h1>
 
       <section class="thread" id="thread" aria-label="Conversation">
         <div class="thread-inner" id="threadInner" role="log" aria-live="polite" aria-relevant="additions"></div>
@@ -61,7 +61,6 @@
               <span class="i i-plus" aria-hidden="true"></span><span class="sr-only">Attach files</span>
               <input type="file" id="fileInput" multiple hidden>
             </label>
-            <button class="toggle" id="thinkToggle" type="button" aria-pressed="false" title="Reason step by step before answering. Slower.">Think first</button>
             <span class="spacer"></span>
             <span class="composer-note" id="composerNote"></span>
             <button class="send" id="send" type="submit" aria-label="Send"><span class="i i-up" aria-hidden="true"></span></button>
@@ -97,6 +96,9 @@
     <label class="switch"><span><b>Run plans automatically</b><small>Start a plan as soon as it is made and keep going until it is done.</small></span><input type="checkbox" name="autoRun"><span class="track" aria-hidden="true"></span></label>
     <label class="switch"><span><b>Think first</b><small>Reason before answering. Slower, sometimes better on hard questions.</small></span><input type="checkbox" name="thinking"><span class="track" aria-hidden="true"></span></label>
     <label class="switch"><span><b>Read any web page</b><small>Uses r.jina.ai. The URLs Rill reads are sent to that service.</small></span><input type="checkbox" name="webReader"><span class="track" aria-hidden="true"></span></label>
+    <label class="field"><span>Theme</span>
+      <select name="theme"><option value="light">Light</option><option value="dark">Dark</option><option value="system">Match system</option></select>
+    </label>
     <label class="field"><span>Compute</span>
       <select name="device"><option value="auto">Automatic (WebGPU when available)</option><option value="webgpu">WebGPU</option><option value="wasm">CPU (slow)</option></select>
     </label>

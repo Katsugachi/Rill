@@ -109,10 +109,9 @@ function greeting() {
 }
 
 const STARTERS = [
-  ['Make a 5-day study plan for my chemistry exam', 'plan'],
-  ['What is 17.5% of $2,349.80, then compounded at 4% for 3 years?', 'maths'],
-  ['Who designed the Golden Gate Bridge, and how long did it take?', 'research'],
-  ['Give me a checklist for moving house next month', 'checklist'],
+  'Make a 5-day study plan for my chemistry exam',
+  'What is 17.5% of $2,349.80, then compounded at 4% for 3 years?',
+  'Who designed the Golden Gate Bridge, and how long did it take?',
 ];
 
 function renderWelcome() {
@@ -125,8 +124,7 @@ function renderWelcome() {
   inner.replaceChildren();
   $('greeting').replaceChildren(wrap);
   if (!$('starters').childElementCount) {
-    $('starters').append(...STARTERS.map(([q, kind]) => h('button', { class: 'starter', type: 'button', onclick: () => { $('input').value = q; autoGrow(); $('input').focus(); } },
-      h('span', { text: q }), h('span', { class: 'count', text: kind }))));
+    $('starters').append(...STARTERS.map((q) => h('button', { class: 'starter', type: 'button', onclick: () => { $('input').value = q; autoGrow(); $('input').focus(); } }, h('span', { text: q }))));
   }
   document.body.classList.remove('focus');
 }
@@ -321,7 +319,6 @@ function assistantNode(m) {
     meta.replaceChildren();
     if (!msg.streaming && msg.content) {
       meta.append(h('button', { type: 'button', onclick: async (e) => { await navigator.clipboard.writeText(msg.content).catch(() => {}); e.target.textContent = 'Copied'; setTimeout(() => { e.target.textContent = 'Copy'; }, 1200); } }, 'Copy'));
-      if (msg.stats?.tokensPerSecond) meta.append(h('span', { text: `${msg.stats.newTokens} tokens · ${msg.stats.tokensPerSecond} tok/s` }));
       if (msg.aborted) meta.append(h('span', { text: 'Stopped' }));
     }
   };
@@ -375,7 +372,6 @@ async function createPlan({ title, goal, steps }) {
   await savePlan(plan);
   state.lastCreatedPlan = plan;
   renderPanel();
-  if (!matchMedia('(max-width: 820px)').matches) setPanel(true, 'plan'); // on phones the card in the thread is enough
   return plan;
 }
 
@@ -525,7 +521,6 @@ async function createNote({ title, content }) {
 function setPanel(open, tab) {
   if (tab) state.panelTab = tab;
   $('shell').dataset.panel = open ? 'open' : 'closed';
-  $('togglePanel').setAttribute('aria-expanded', String(open));
   if (matchMedia('(max-width: 820px)').matches) $('scrim').hidden = !open && $('shell').dataset.sidebar !== 'open';
   renderPanel();
 }
@@ -720,7 +715,7 @@ function updateComposer() {
   $('composer').classList.toggle('has-text', !!has);
   const run = state.runningPlan;
   $('composerNote').textContent = run ? `Plan ${planProgress(run).done}/${run.steps.length}` : '';
-  $('thinkToggle').setAttribute('aria-pressed', String(!!state.settings.thinking));
+
   $('input').placeholder = state.runningPlan ? 'Working through the plan' : state.chat?.messages.length ? 'Reply' : 'Ask Rill anything';
 }
 
@@ -767,13 +762,8 @@ $('openSidebar').addEventListener('click', () => setSidebar(true));
 for (const [id, tab] of [['navPlan', 'plan'], ['navFiles', 'files'], ['navNotes', 'notes']]) {
   $(id).addEventListener('click', () => { if (narrow()) setSidebar(false); setPanel(true, tab); if (narrow()) $('scrim').hidden = false; });
 }
-$('thinkToggle').addEventListener('click', () => { state.settings.thinking = !state.settings.thinking; saveSettings(state.settings); updateComposer(); });
+
 $('scrim').addEventListener('click', () => { setSidebar(false); setPanel(false); $('scrim').hidden = true; });
-$('togglePanel').addEventListener('click', () => {
-  const open = $('shell').dataset.panel !== 'open';
-  setPanel(open);
-  if (matchMedia('(max-width: 820px)').matches) $('scrim').hidden = !open;
-});
 $('closePanel').addEventListener('click', () => { setPanel(false); $('scrim').hidden = $('shell').dataset.sidebar !== 'open' || !matchMedia('(max-width: 820px)').matches; });
 for (const t of ['plan', 'files', 'notes']) $('tab-' + t).addEventListener('click', () => { state.panelTab = t; renderPanel(); });
 $('newChat').addEventListener('click', newChat);
@@ -799,7 +789,8 @@ $('openSettings').addEventListener('click', () => {
 });
 $('settings').addEventListener('close', () => {
   const s = { ...state.settings };
-  for (const k of ['name', 'device']) s[k] = form.elements[k].value.trim();
+  for (const k of ['name', 'device', 'theme']) s[k] = form.elements[k].value.trim();
+  document.documentElement.dataset.theme = s.theme === 'dark' || (s.theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
   for (const k of ['thinking', 'webReader', 'autoRun']) s[k] = form.elements[k].checked;
   const deviceChanged = s.device !== state.settings.device;
   state.settings = s;

@@ -6,23 +6,25 @@ the critique rounds that produced it.
 
 ## Rules
 
-1. **The artwork is the colour.** It is shown as supplied: no tint, no grain overlay, no motion.
-   The interface around it is flat ink, so the two never compete.
-2. **Solid surfaces only.** No blur, gradients, glows or drop shadows. Depth comes from four ink
-   tones (`--bg`, `--surface`, `--raised`, `--line`) taken from the navy of the artwork's sky. The
-   darkest is `#0f1226`, not black.
+1. **The artwork is the colour.** It is shown as supplied on the home screen: no tint, no grain
+   overlay, no motion. Everything else is neutral, so the two never compete. A chat is plain paper.
+2. **Solid surfaces only.** No blur, gradients, glows or drop shadows. Light mode is the default:
+   paper white with neutral greys (`--bg`, `--side`, `--surface`, `--raised`, `--line`). Dark mode is
+   the same structure in neutral grey (`#212121`), chosen in Settings.
 3. **One typeface.** Inter at 13px for the interface and 15px for reading. Hierarchy comes from
    weight (400, 500, 600) and three text tones, not from a second font or large sizes.
-4. **One accent, for state.** The peach of the sunset (`#f9a593`) marks only things that are
-   happening now: loading, a running step, the streaming cursor, focus. At rest the interface has no accent.
-   Primary buttons are light-on-ink instead.
-5. **One object per job.** The home screen is a single block: greeting, model state, composer and
+4. **One accent, for state.** The orange of the sunset (`#e0623c`, lighter in dark mode) marks only
+   things that are happening now: loading, a running step, the streaming cursor, focus. At rest the
+   interface has no accent. Primary buttons are ink on paper instead.
+5. **Few controls.** The composer has two: attach and send. Options that are rarely changed live in
+   Settings. Panels open when asked for, not on their own.
+6. **One object per job.** The home screen is a single block: greeting, model state, composer and
    starter tasks. Model state has one home (the sidebar foot). A tool call is one line; its detail opens on demand.
-6. **Numbers on the right.** Counts, times and progress (`2/5`, `4m`) are right-aligned in tabular
+7. **Numbers on the right.** Counts, times and progress (`2/5`, `4m`) are right-aligned in tabular
    figures, so lists scan in a straight line.
-7. **Text over the artwork must stay readable.** Nothing is typeset directly on the artwork. Text
+8. **Text over the artwork must stay readable.** Nothing is typeset directly on the artwork. Text
    sits on a solid surface.
-8. **Motion explains a change.** 120ms for hover and press, 220ms for things that enter, open or
+9. **Motion explains a change.** 120ms for hover and press, 220ms for things that enter, open or
    move. One easing curve. `prefers-reduced-motion` turns it off.
 
 ## What keeps people oriented
@@ -55,6 +57,11 @@ status text and for leftover streaming indicators.
 **Round 3.** Phones: creating a plan opened the panel over the chat with no way to see why. On phones
 the plan card in the thread is now enough and the panel opens only when asked; it is full width, with a
 scrim. The download size shown now matches what the browser reports.
+
+**Round 4 (owner feedback).** The navy interface did not sit well with the artwork. Switched to paper
+white by default with a neutral grey dark mode. The artwork now appears on the home screen only. Removed:
+the "Think first" toggle in the composer, the panel button, the chat title bar, token statistics under
+replies, the labels on starter tasks, one starter task, and the panel opening by itself when a plan is made.
 
 ## Known gaps
 
