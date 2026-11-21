@@ -81,4 +81,6 @@ clips were re-encoded to 0.9 MB and 1.8 MB. The dark clip is anchored right so t
 - Not yet reviewed with a screen reader.
 - Only tested in Chromium at 1440px and 390px wide.
 - No logo yet.
-- The lighthouse clip does not loop seamlessly: the beam and the ship jump when it restarts.
+- The lighthouse footage has no natural loop point (the beam makes one sweep and the ship keeps
+  drifting), so its last second is dissolved into its first. The restart is smooth, but for that second
+  the ship is faintly visible in two places.
