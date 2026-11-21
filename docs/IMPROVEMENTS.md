@@ -52,7 +52,8 @@ Decisions made while building Rill, problems found along the way, and what to do
    Transformers.js) would beat BM25 on paraphrased questions.
 3. **Pin the model revision** in `engine.js` for reproducible behaviour.
 4. **Multi-threaded WASM on Pages** through a COOP/COEP service worker (such as `coi-serviceworker`),
-   so the CPU fallback can use every core.
+   so the CPU fallback can use every core. Measured in single-threaded headless Chrome on the dev VM,
+   the CPU path loads in about 20 s (after download) but generates at only about 0.2 tokens/s, so it is a last resort.
 5. **Export and import** of chats, plans and notes as JSON, so people can move between devices.
 6. **Step retries.** If a step's result looks empty or is an error, retry once with the error added
    before moving on.
