@@ -66,5 +66,5 @@ The e2e script needs `pip install playwright` and a Chromium (set `CHROME=/path/
 
 - Model: LiquidAI LFM3-1.7B (LFM Open License v1.0). Weights are downloaded from Hugging Face at runtime and are not stored in this repo.
 - Vendored: Transformers.js 4.3.2 (Apache-2.0), ONNX Runtime Web 1.31 dev (MIT), pdf.js 5.4 (Apache-2.0), Inter (OFL).
-- Personality adapted from the publicly shared system prompt of [Poke](https://poke.com) by The Interaction Company.
-- Backdrop artwork supplied by the project owner.
+- Personality follows the publicly shared prompt guidelines of [Poke](https://poke.com) by The Interaction Company, minus the parts about messaging apps, email and background agents.
+- Home-screen clips supplied by the project owner.

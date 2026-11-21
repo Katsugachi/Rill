@@ -84,8 +84,8 @@ through a long worksheet one part at a time.
 
 - Three columns: a sidebar (new chat, Plans, Files, Notes, chats, model state), the conversation, and a
   panel with Plan, Files and Notes. The side columns become drawers on small screens.
-- The supplied artwork fills the home screen, with one solid block (greeting, composer, starter tasks)
-  on it. A chat is a plain reading column. Light mode is the default; dark mode is a setting.
+- A short looping clip fills the home screen (`assets/home-light.mp4`, `assets/home-dark.mp4`), with one
+  solid block (greeting, composer, starter tasks) on it. A chat is a plain reading column. Light mode is the default; dark mode is a setting.
 - The rules behind the look are in [DESIGN.md](DESIGN.md): flat neutral surfaces, one typeface, one accent
   colour used for state only, few controls.
 

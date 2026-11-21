@@ -21,6 +21,10 @@ export function splitThinking(raw, startedInThink) {
   let thinking = '';
   let inThink = false;
   if (startedInThink && !text.startsWith('<think>')) text = '<think>' + text;
+  // With thinking off, LFM3 sometimes drafts, writes a bare </think>, then
+  // answers. Everything before that closing tag is the draft.
+  const bare = text.indexOf('</think>');
+  if (bare !== -1 && !text.slice(0, bare).includes('<think>')) text = '<think>' + text;
   const open = text.indexOf('<think>');
   if (open !== -1) {
     const close = text.indexOf('</think>', open);

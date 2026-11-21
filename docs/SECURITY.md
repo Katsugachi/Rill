@@ -47,7 +47,7 @@ Set with a `<meta>` tag in `index.html`, because GitHub Pages can't send headers
 default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:;
 connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.wikipedia.org https://r.jina.ai;
 img-src 'self' data: blob:; style-src 'self'; font-src 'self'; frame-src 'self';
-media-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none';
+media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none';
 require-trusted-types-for 'script'; trusted-types default
 ```
 

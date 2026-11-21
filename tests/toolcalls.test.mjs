@@ -43,6 +43,12 @@ test('splits thinking, including open thoughts mid-stream', () => {
   assert.equal(parseAssistant('a</think>Hello!<|im_end|>', { startedInThink: true }).content, 'Hello!');
 });
 
+test('treats text before a bare </think> as a draft', () => {
+  const p = parseAssistant("Ugh, the slump is real. What's on your mind?</think>Monday vibes are rough. What's up?<|im_end|>");
+  assert.equal(p.content, "Monday vibes are rough. What's up?");
+  assert.match(p.thinking, /slump/);
+});
+
 test('strips special tokens', () => {
   assert.equal(parseAssistant('Done.<|im_end|><|im_start|>user\nhi').content, 'Done.');
 });

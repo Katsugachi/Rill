@@ -787,6 +787,7 @@ $('settings').addEventListener('close', () => {
   const s = { ...state.settings };
   for (const k of ['name', 'device', 'theme']) s[k] = form.elements[k].value.trim();
   document.documentElement.dataset.theme = s.theme === 'dark' || (s.theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  syncBackdrop();
   for (const k of ['thinking', 'webReader', 'autoRun']) s[k] = form.elements[k].checked;
   const deviceChanged = s.device !== state.settings.device;
   state.settings = s;
@@ -802,6 +803,25 @@ $('clearData').addEventListener('click', async () => {
   location.reload();
 });
 
+/* ------------------------------------------------------------ home backdrop */
+// A short looping clip per theme, on the home screen only. The still frame is
+// the CSS background, so nothing moves under reduced motion or before it loads.
+function syncBackdrop() {
+  const v = $('bgVideo');
+  const home = !document.body.classList.contains('focus');
+  if (!home || document.hidden || matchMedia('(prefers-reduced-motion: reduce)').matches) { v.pause(); return; }
+  const file = `assets/home-${document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'}.mp4`;
+  if (v.dataset.file !== file) {
+    v.classList.remove('playing');
+    v.dataset.file = file;
+    v.src = new URL(file, document.baseURI).href; // fixed same-origin asset
+  }
+  v.play().catch(() => {}); // autoplay can be refused; the still stays
+}
+$('bgVideo').addEventListener('playing', () => $('bgVideo').classList.add('playing'));
+document.addEventListener('visibilitychange', syncBackdrop);
+new MutationObserver(syncBackdrop).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
 /* ------------------------------------------------------------ boot */
 async function boot() {
   const [chats, files, notes, plans] = await Promise.all(['chats', 'files', 'notes', 'plans'].map((s) => store.all(s).catch(() => [])));
@@ -812,6 +832,7 @@ async function boot() {
   if (matchMedia('(max-width: 820px)').matches) setSidebar(false);
   await newChat();
   updateComposer();
+  syncBackdrop();
   if (MOCK) loadModel(); // the scripted engine has nothing to download
   // Interrupted plans (tab closed mid-run) are marked paused at boot so the UI
   // never claims work is happening when it is not.

@@ -1,7 +1,7 @@
 // The agent loop: generate → parse tool calls → execute → feed results back,
 // until the model answers in plain text. Also the autonomous plan runner.
 import { parseAssistant } from './toolcalls.js';
-import { systemPrompt, stepPrompt, summaryPrompt } from './prompt.js';
+import { systemPrompt, stepPrompt, summaryPrompt, stripFiller } from './prompt.js';
 import { SCHEMAS, toolList, execute } from '../tools/index.js';
 
 const CHAT_TOOLS = ['run_js', 'search_web', 'read_page', 'search_files', 'read_file', 'create_plan', 'save_note'];
@@ -72,13 +72,13 @@ export class Agent {
         onToken: (t) => {
           raw += t;
           const p = parseAssistant(raw, { startedInThink: thinking, schemas: SCHEMAS });
-          msg.content = p.content; msg.thinking = p.thinking; msg.inThink = p.inThink; msg.pendingCall = p.pendingCall;
+          msg.content = stripFiller(p.content); msg.thinking = p.thinking; msg.inThink = p.inThink; msg.pendingCall = p.pendingCall;
           msg.prefill = 1;
           hooks.onUpdate?.(msg);
         },
       });
       const p = parseAssistant(res.text || raw, { startedInThink: thinking, schemas: SCHEMAS });
-      Object.assign(msg, { content: p.content, thinking: p.thinking, toolCalls: p.toolCalls, streaming: false, inThink: false, pendingCall: false, stats: res.stats, aborted: res.aborted });
+      Object.assign(msg, { content: stripFiller(p.content), thinking: p.thinking, toolCalls: p.toolCalls, streaming: false, inThink: false, pendingCall: false, stats: res.stats, aborted: res.aborted });
       hooks.onUpdate?.(msg);
       last = msg;
       if (res.aborted || !p.toolCalls.length) break;

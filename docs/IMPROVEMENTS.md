@@ -25,9 +25,13 @@ Decisions made while building Rill, problems found along the way, and what to do
   code, tables, quotes and links.
 - **Wikipedia for research.** It is the only good, keyless, CORS-enabled search a static site can
   call directly. Reading any page needs a proxy, so that is opt-in and explained in Settings.
-- **Personality.** Adapted from Poke's published prompt: warm, witty only when it fits, short, adapts
-  to the user, and no "Let me know if you need anything else!". The prompt is written as short,
-  direct rules because small models follow those better than long prose.
+- **Personality.** Follows Poke's published guidelines section by section: warmth, wit, conciseness,
+  adaptiveness and a human texting voice, including its banned phrases and its rules on jokes, emojis
+  and matching the user's length. The parts about iMessage, email drafts and background agents are left
+  out because Rill has none of them. Three one-line examples anchor the voice, because a 1.7B model
+  copies examples more reliably than it follows rules.
+  The model still adds banned filler such as "What's on your mind?" in roughly half of small-talk
+  replies, so `stripFiller()` removes those sentences from what is shown.
 
 ## Problems found and fixed while building
 

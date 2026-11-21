@@ -6,8 +6,9 @@ the critique rounds that produced it.
 
 ## Rules
 
-1. **The artwork is the colour.** It is shown as supplied on the home screen: no tint, no grain
-   overlay, no motion. Everything else is neutral, so the two never compete. A chat is plain paper.
+1. **The artwork is the colour.** The home screen shows a short looping clip, one for light mode and
+   one for dark, with no tint or overlay. Everything else is neutral, so the two never compete. A chat
+   is plain paper, and the clip pauses there. Under `prefers-reduced-motion` a still frame is shown instead.
 2. **Solid surfaces only.** No blur, gradients, glows or drop shadows. Light mode is the default:
    paper white with neutral greys (`--bg`, `--side`, `--surface`, `--raised`, `--line`). Dark mode is
    the same structure in neutral grey (`#212121`), chosen in Settings.
@@ -71,8 +72,13 @@ Introduced the five-step type scale and the 8px grid above, and aligned the gree
 tasks to one left edge. Removed the line describing the model on the home screen: download progress
 now appears only while a load is running or after one fails. Removed the logo.
 
+**Round 6 (owner feedback).** The landscape image was replaced by two owner-supplied clips: clouds for
+light mode and a lighthouse at night for dark mode. Black borders in the files were cropped, and the
+clips were re-encoded to 0.9 MB and 1.8 MB. The dark clip is anchored right so the lighthouse stays in frame.
+
 ## Known gaps
 
 - Not yet reviewed with a screen reader.
 - Only tested in Chromium at 1440px and 390px wide.
-- No logo yet, and the home image may be replaced.
+- No logo yet.
+- The lighthouse clip does not loop seamlessly: the beam and the ship jump when it restarts.

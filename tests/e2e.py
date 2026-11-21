@@ -128,16 +128,21 @@ with sync_playwright() as p:
     r = browser.new_page(viewport={"width": 1440, "height": 900})
     r.goto(URL); r.wait_for_selector(".welcome"); r.wait_for_timeout(500)
     check(r.inner_text("#statusText") == "Not loaded", "status reads Not loaded before loading")
+    wait_until(r, "() => document.querySelector('#bgVideo').classList.contains('playing')", 15000)
+    check(r.evaluate("() => { const v = document.querySelector('#bgVideo'); return !v.paused && v.videoWidth > 0 && v.dataset.file.includes('home-light'); }"), "home video plays in light mode")
     r.screenshot(path=f"{SHOTS}/00-welcome-unloaded.png")
     # Dark theme
     d = browser.new_page(viewport={"width": 1440, "height": 900})
     d.goto(URL + "?mock"); d.evaluate("localStorage.setItem('rill.settings', JSON.stringify({theme:'dark'}))"); d.reload()
     d.wait_for_selector("#statusPill[data-state=ready]")
     check(d.evaluate("() => document.documentElement.dataset.theme") == "dark", "dark theme applies from settings")
-    d.wait_for_timeout(400); d.screenshot(path=f"{SHOTS}/12-dark-home.png")
+    wait_until(d, "() => document.querySelector('#bgVideo').classList.contains('playing')", 15000)
+    check(d.evaluate("() => document.querySelector('#bgVideo').dataset.file.includes('home-dark')"), "home video switches for dark mode")
+    d.wait_for_timeout(600); d.screenshot(path=f"{SHOTS}/12-dark-home.png")
     d.fill("#input", "Make a plan for my weekend project"); d.keyboard.press("Enter")
     wait_until(d, "() => window.rill.state.plans.at(-1)?.status === 'done'", 30000); d.wait_for_timeout(3500)
     d.screenshot(path=f"{SHOTS}/13-dark-plan.png")
+    check(d.evaluate("() => document.querySelector('#bgVideo').paused"), "home video pauses inside a chat")
 
     real = [e for e in errors if "favicon" not in e]
     check(not real, "no console errors: " + json.dumps(real[:5]))

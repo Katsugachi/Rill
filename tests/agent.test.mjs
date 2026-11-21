@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { toTemplate } from '../js/core/agent.js';
-import { stepPrompt } from '../js/core/prompt.js';
+import { stepPrompt, stripFiller } from '../js/core/prompt.js';
 
 test('history budget drops oldest turns and never starts mid-tool', () => {
   const msgs = [
@@ -26,4 +26,11 @@ test('step prompt marks progress and includes prior results', () => {
   assert.match(s, /2\. \[>\] two/);
   assert.match(s, /Step 1: r1/);
   assert.match(s, /Now do step 2/);
+});
+
+test('strips banned filler sentences but never empties a reply', () => {
+  assert.equal(stripFiller("Anytime, Adrian. What's on your mind?"), 'Anytime, Adrian.');
+  assert.equal(stripFiller('It is 12. Let me know if you need anything else!'), 'It is 12.');
+  assert.equal(stripFiller('Hey, what can I help you with today?'), 'Hey, what can I help you with today?');
+  assert.equal(stripFiller('Frank Herbert wrote Dune.'), 'Frank Herbert wrote Dune.');
 });
