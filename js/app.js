@@ -457,16 +457,22 @@ async function startPlan(plan) {
     if (plan.status === 'summarising') {
       setStatus('busy', 'Writing summary');
       const temp = agent.summaryMessages(plan);
-      await agent.turn({
+      const summary = await agent.turn({
         messages: temp, tools: [],
         hooks: {
           onAppend: (m) => { m.planSummary = plan.id; state.chat.messages.push(m); appendMessage(m); },
           onUpdate: (m) => updateMessage(m),
         },
       });
-      plan.status = 'done';
-      await savePlan(plan);
-      toast(`Finished “${plan.title}”.`);
+      if (summary?.aborted) {
+        plan.status = 'paused';
+        await savePlan(plan);
+        toast('Summary stopped. Press Resume to write it.');
+      } else {
+        plan.status = 'done';
+        await savePlan(plan);
+        toast(`Finished “${plan.title}”.`);
+      }
     } else if (plan.status === 'paused') toast('Plan paused. Resume whenever you like.');
   } catch (err) {
     plan.status = 'paused';
