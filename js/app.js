@@ -165,6 +165,7 @@ function updateLoadCard() {
 /* ------------------------------------------------------------ chats */
 async function newChat() {
   if (state.busy) return toast('Rill is still working. Stop it first.');
+  if (state.awaitingModel) return toast('Your message is waiting for the model to load.');
   state.chat = { id: uid('c'), title: 'New chat', created: Date.now(), updated: Date.now(), messages: [] };
   $('chatTitle').textContent = 'New chat';
   renderThread();
@@ -175,6 +176,7 @@ async function newChat() {
 
 async function openChat(id) {
   if (state.busy && state.chat?.id !== id) return toast('Rill is still working. Stop it first.');
+  if (state.awaitingModel && state.chat?.id !== id) return toast('Your message is waiting for the model to load.');
   const chat = await store.get('chats', id);
   if (!chat) return;
   state.chat = chat;
@@ -659,10 +661,12 @@ async function send(text, files = []) {
   updateComposer();
   if (!engine.ready) {
     // The message stays visible while the model loads, with progress under it.
+    state.awaitingModel = true; // the chat must stay put until its answer can start
     const loading = loadModel();
     const line = loadCard();
     $('threadInner').append(line);
     await loading;
+    state.awaitingModel = false;
     line.remove();
     if (!engine.ready) { toast(state.load.error || 'The model did not load.', 'error'); renderChatList(); return; }
   }
