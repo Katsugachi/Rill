@@ -119,8 +119,7 @@ function renderWelcome() {
   if (state.chat?.messages.length) return;
   // The greeting lives inside the composer block so it never fights the artwork.
   const wrap = h('div', { class: 'welcome' }, h('h2', { text: greeting() }));
-  if (engine.ready) wrap.append(h('p', { class: 'sub', text: 'Ask a question, drop in a worksheet, or hand over something long.' }));
-  else wrap.append(loadCard());
+  if (state.loading || state.load.error) wrap.append(loadCard());
   inner.replaceChildren();
   $('greeting').replaceChildren(wrap);
   if (!$('starters').childElementCount) {
@@ -129,19 +128,16 @@ function renderWelcome() {
   document.body.classList.remove('focus');
 }
 
-// One line of model state: what it is, what it costs, and the single action.
+// Model progress, shown only while it matters: during a load, or after a failed one.
 function loadCard() {
   const line = h('div', { class: 'model-line', id: 'loadCard' });
-  if (state.loading) {
-    line.append(h('span', { class: 'sq live' }), h('b', { id: 'loadStage', text: state.load.stage || 'Starting' }), h('span', { id: 'loadBytes', text: MOCK ? '' : 'Downloaded once, then cached' }),
-      h('div', { class: 'progress', role: 'progressbar', 'aria-label': 'Model download', 'aria-valuemin': 0, 'aria-valuemax': 100, id: 'loadBar' }, h('i')));
-  } else if (state.load.error) {
+  if (state.load.error) {
     line.classList.add('warn');
     line.append(h('span', { class: 'sq' }), h('span', { text: state.load.error + (state.settings.device !== 'wasm' ? ' You can switch to CPU in Settings.' : '') }),
       h('button', { class: 'link', type: 'button', onclick: loadModel }, 'Try again'));
   } else {
-    line.append(h('span', { class: 'sq' }), h('span', { text: 'LFM3 1.7B runs on this device. About 1 GB, downloaded once.' }),
-      h('button', { class: 'link', type: 'button', onclick: loadModel }, 'Load model'));
+    line.append(h('span', { class: 'sq live' }), h('b', { id: 'loadStage', text: state.load.stage || 'Loading the model' }), h('span', { class: 'dim', id: 'loadBytes' }),
+      h('div', { class: 'progress', role: 'progressbar', 'aria-label': 'Model download', 'aria-valuemin': 0, 'aria-valuemax': 100, id: 'loadBar' }, h('i')));
   }
   return line;
 }

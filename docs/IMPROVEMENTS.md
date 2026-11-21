@@ -60,4 +60,4 @@ Decisions made while building Rill, problems found along the way, and what to do
 7. **Scanned PDFs.** Add OCR (Tesseract.js) as an opt-in for image-only PDFs, which currently extract no text.
 8. **Offline PWA.** Add a service worker for the app shell, so Rill opens with no network once the model is cached.
 9. **Accessibility pass** with a screen reader: the live region for streaming text and the focus order in the drawers.
-10. **Logo polish.** `assets/logo.svg` is a flat first draft: two streams and a sun. A wordmark and favicon set would come next.
+10. **Logo.** Deferred. The sidebar shows the name as plain text for now.

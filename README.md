@@ -1,5 +1,3 @@
-<p align="center"><img src="assets/logo.svg" width="96" alt="Rill logo"></p>
-
 # Rill
 
 A calm, private assistant for everyday tasks that runs **entirely in your browser**.

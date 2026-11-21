@@ -105,6 +105,7 @@ with sync_playwright() as p:
     check(any("binary" in t for t in page.locator(".toast.error").all_inner_texts()), "upload: binary rejected")
     page.click("#navFiles")
     check(page.locator("#pane-files .card").count() == 1, "upload: file listed in panel")
+    page.wait_for_timeout(5500)
     page.screenshot(path=f"{SHOTS}/05-files.png")
 
     page.click("#closePanel"); page.click("#openSettings"); page.wait_for_timeout(400)
@@ -125,7 +126,7 @@ with sync_playwright() as p:
     m.screenshot(path=f"{SHOTS}/08-mobile-chat.png")
     # Real (non-demo) welcome: model not loaded
     r = browser.new_page(viewport={"width": 1440, "height": 900})
-    r.goto(URL); r.wait_for_selector("#loadCard"); r.wait_for_timeout(500)
+    r.goto(URL); r.wait_for_selector(".welcome"); r.wait_for_timeout(500)
     check(r.inner_text("#statusText") == "Not loaded", "status reads Not loaded before loading")
     r.screenshot(path=f"{SHOTS}/00-welcome-unloaded.png")
     # Dark theme
