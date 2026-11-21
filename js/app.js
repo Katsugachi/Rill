@@ -727,6 +727,7 @@ function updateComposer() {
 $('composer').addEventListener('submit', (e) => {
   e.preventDefault();
   if (state.busy) return stop();
+  if (state.loading) return; // keep the draft until the model is ready
   const text = $('input').value;
   const files = state.pending;
   state.pending = [];
