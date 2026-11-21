@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- Loaded only inside <iframe sandbox="allow-scripts">: opaque origin, no access to Rill's storage.
+     No network: connect-src 'none'. 'unsafe-eval' is allowed here and nowhere else. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-eval' blob:; worker-src blob:; connect-src 'none'; img-src 'none'; style-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Rill sandbox</title>
+</head>
+<body>
+<script src="js/sandbox/host.js"></script>
+</body>
+</html>
