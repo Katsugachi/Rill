@@ -65,7 +65,7 @@ async function loadModel() {
   if (state.loading || engine.ready) return;
   state.loading = true;
   state.load = { files: {}, error: '', note: '' };
-  setStatus('loading', 'Loading…');
+  setStatus('loading', 'Loading');
   renderWelcome();
   let choice = await detectDevice();
   if (state.settings.device === 'wasm') choice = { device: 'wasm', dtype: 'q4', reason: 'CPU mode selected in Settings.' };
@@ -73,11 +73,10 @@ async function loadModel() {
   state.load.note = choice.reason;
   try {
     const info = await engine.load(choice);
-    setStatus('ready', info.device === 'webgpu' ? 'Ready · WebGPU' : info.device === 'mock' ? 'Demo mode' : 'Ready · CPU');
-    toast(info.device === 'mock' ? 'Demo mode: scripted replies, no model.' : 'Rill is awake. Everything runs on your device.');
+    setStatus('ready', readyLabel());
   } catch (err) {
     state.load.error = String(err.message || err);
-    setStatus('error', 'Load failed');
+    setStatus('error', 'Failed');
   } finally {
     state.loading = false;
     renderWelcome();
@@ -85,7 +84,6 @@ async function loadModel() {
   }
   if (engine.ready) {
     resumeInterrupted();
-    if (state.queued) { const q = state.queued; state.queued = null; send(q.text, q.files); }
   }
 }
 
@@ -110,49 +108,44 @@ function greeting() {
   return part + (state.settings.name ? ', ' + state.settings.name : '');
 }
 
-const SUGGESTIONS = [
-  ['Break it down', 'Make a 5-day study plan for my chemistry exam'],
-  ['Do the maths', 'What\'s 17.5% of $2,349.80, compounded monthly for 3 years at 4%?'],
-  ['Research', 'Who designed the Golden Gate Bridge, and how long did it take?'],
-  ['Checklist', 'Give me a checklist for moving house next month'],
+const STARTERS = [
+  ['Make a 5-day study plan for my chemistry exam', 'plan'],
+  ['What is 17.5% of $2,349.80, then compounded at 4% for 3 years?', 'maths'],
+  ['Who designed the Golden Gate Bridge, and how long did it take?', 'research'],
+  ['Give me a checklist for moving house next month', 'checklist'],
 ];
 
 function renderWelcome() {
   const inner = $('threadInner');
   if (state.chat?.messages.length) return;
+  // The greeting lives inside the composer block so it never fights the artwork.
+  const wrap = h('div', { class: 'welcome' }, h('h2', { text: greeting() }));
+  if (engine.ready) wrap.append(h('p', { class: 'sub', text: 'Ask a question, drop in a worksheet, or hand over something long.' }));
+  else wrap.append(loadCard());
   inner.replaceChildren();
-  const wrap = h('div', { class: 'welcome' });
-  const logo = h('img', { class: 'logo-big', alt: '', width: 64, height: 64 });
-  logo.src = 'assets/logo.svg';
-  const title = h('h2', {}, greeting() + '.', h('br'), 'What are we ', h('em', { text: 'tackling' }), ' today?');
-  wrap.append(logo, title);
-  if (!engine.ready) wrap.append(loadCard());
-  else wrap.append(h('p', { class: 'sub', text: 'Ask anything, drop in a worksheet, or hand me something long. I\'ll plan it and work through it.' }));
-  const sugg = h('div', { class: 'suggestions' });
-  for (const [t, q] of SUGGESTIONS) {
-    sugg.append(h('button', { class: 'suggestion', type: 'button', onclick: () => { $('input').value = q; autoGrow(); $('input').focus(); } }, h('b', { text: t }), q));
+  $('greeting').replaceChildren(wrap);
+  if (!$('starters').childElementCount) {
+    $('starters').append(...STARTERS.map(([q, kind]) => h('button', { class: 'starter', type: 'button', onclick: () => { $('input').value = q; autoGrow(); $('input').focus(); } },
+      h('span', { text: q }), h('span', { class: 'count', text: kind }))));
   }
-  wrap.append(sugg);
-  inner.append(wrap);
   document.body.classList.remove('focus');
 }
 
+// One line of model state: what it is, what it costs, and the single action.
 function loadCard() {
-  const card = h('div', { class: 'load-card glass', id: 'loadCard' });
+  const line = h('div', { class: 'model-line', id: 'loadCard' });
   if (state.loading) {
-    card.append(
-      h('div', { class: 'load-row' }, h('div', { class: 'load-meta' }, h('b', { id: 'loadStage', text: state.load.stage || 'Starting…' }), h('span', { id: 'loadBytes', text: 'Downloading once, then cached for offline use' }))),
-      h('div', { class: 'progress', role: 'progressbar', 'aria-label': 'Model download', 'aria-valuemin': 0, 'aria-valuemax': 100, id: 'loadBar' }, h('i')),
-    );
+    line.append(h('span', { class: 'sq live' }), h('b', { id: 'loadStage', text: state.load.stage || 'Starting' }), h('span', { id: 'loadBytes', text: MOCK ? '' : 'Downloaded once, then cached' }),
+      h('div', { class: 'progress', role: 'progressbar', 'aria-label': 'Model download', 'aria-valuemin': 0, 'aria-valuemax': 100, id: 'loadBar' }, h('i')));
+  } else if (state.load.error) {
+    line.classList.add('warn');
+    line.append(h('span', { class: 'sq' }), h('span', { text: state.load.error + (state.settings.device !== 'wasm' ? ' You can switch to CPU in Settings.' : '') }),
+      h('button', { class: 'link', type: 'button', onclick: loadModel }, 'Try again'));
   } else {
-    const btn = h('button', { class: 'btn btn-primary btn-lg', type: 'button', onclick: loadModel }, icon('spark'), state.load.error ? 'Try again' : 'Wake Rill');
-    card.append(h('div', { class: 'load-row' },
-      h('div', { class: 'load-meta' }, h('b', { text: 'LFM3 1.7B · on-device' }), MOCK ? 'Demo mode — no download.' : 'One-time ~1.4 GB download, cached by your browser. Private by design.'),
-      btn));
+    line.append(h('span', { class: 'sq' }), h('span', { text: 'LFM3 1.7B runs on this device. About 1 GB, downloaded once.' }),
+      h('button', { class: 'link', type: 'button', onclick: loadModel }, 'Load model'));
   }
-  if (state.load.error) card.append(h('p', { class: 'load-note warn', text: state.load.error + (state.settings.device !== 'wasm' ? ' — you can switch to CPU in Settings.' : '') }));
-  else if (state.load.note) card.append(h('p', { class: 'load-note warn', text: state.load.note }));
-  return card;
+  return line;
 }
 
 function updateLoadCard() {
@@ -164,13 +157,14 @@ function updateLoadCard() {
   bar.firstChild.style.setProperty('--p', pct.toFixed(1) + '%');
   bar.setAttribute('aria-valuenow', Math.round(pct));
   $('loadStage').textContent = state.load.stage || 'Loading';
+  if (state.load.note && !total) $('loadBytes').textContent = state.load.note;
   if (total) $('loadBytes').textContent = `${fmtBytes(loaded)} of ${fmtBytes(total)} · ${Math.round(pct)}%`;
-  setStatus('loading', total ? `Loading ${Math.round(pct)}%` : 'Loading…');
+  setStatus('loading', total ? `${Math.round(pct)}%` : 'Loading');
 }
 
 /* ------------------------------------------------------------ chats */
 async function newChat() {
-  if (state.busy) return toast('Rill is still working — stop it first.');
+  if (state.busy) return toast('Rill is still working. Stop it first.');
   state.chat = { id: uid('c'), title: 'New chat', created: Date.now(), updated: Date.now(), messages: [] };
   $('chatTitle').textContent = 'New chat';
   renderThread();
@@ -180,7 +174,7 @@ async function newChat() {
 }
 
 async function openChat(id) {
-  if (state.busy && state.chat?.id !== id) return toast('Rill is still working — stop it first.');
+  if (state.busy && state.chat?.id !== id) return toast('Rill is still working. Stop it first.');
   const chat = await store.get('chats', id);
   if (!chat) return;
   state.chat = chat;
@@ -200,6 +194,14 @@ async function deleteChat(id) {
   if (state.chat?.id === id) newChat(); else renderChatList();
 }
 
+function ago(t) {
+  const m = Math.floor((Date.now() - t) / 60000);
+  if (m < 1) return 'now';
+  if (m < 60) return m + 'm';
+  if (m < 1440) return Math.floor(m / 60) + 'h';
+  return Math.floor(m / 1440) + 'd';
+}
+
 function renderChatList() {
   const list = $('chatList');
   const chats = [...state.chats];
@@ -213,12 +215,14 @@ function renderChatList() {
     nodes.push(h('div', { class: 'chat-group', text: label }));
     for (const c of items) {
       const running = state.runningPlan && state.runningPlan.chatId === c.id;
-      const del = h('button', { class: 'del', type: 'button', 'aria-label': 'Delete chat', onclick: (e) => { e.stopPropagation(); deleteChat(c.id); } }, icon('trash'));
-      nodes.push(h('button', { class: 'chat-item', type: 'button', 'aria-current': state.chat?.id === c.id ? 'page' : null, onclick: () => openChat(c.id) },
-        h('span', { class: 'label', text: c.title }), running ? h('span', { class: 'running', title: 'Working on a plan' }) : null, del));
+      const del = h('span', { class: 'del', role: 'button', tabindex: 0, 'aria-label': 'Delete chat', onclick: (e) => { e.stopPropagation(); deleteChat(c.id); }, onkeydown: (e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); deleteChat(c.id); } } }, icon('trash'));
+      const right = running ? h('span', { class: 'count running', text: planProgress(state.runningPlan).done + '/' + state.runningPlan.steps.length, title: 'Working through a plan' })
+        : h('span', { class: 'count', text: ago(c.updated) });
+      nodes.push(h('button', { class: 'row chat-item', type: 'button', 'aria-current': state.chat?.id === c.id ? 'page' : null, onclick: () => openChat(c.id) },
+        h('span', { class: 'label', text: c.title }), right, del));
     }
   }
-  if (!nodes.length) nodes.push(h('p', { class: 'privacy-note', text: 'Your chats will appear here.' }));
+  if (!nodes.length) nodes.push(h('div', { class: 'chat-group', text: 'Chats' }), h('p', { class: 'list-empty', text: 'Nothing yet.' }));
   list.replaceChildren(...nodes);
 }
 
@@ -247,7 +251,7 @@ function renderThread() {
 }
 
 function appendMessage(m, animate = true) {
-  if (!state.chat.messages.length || $('threadInner').querySelector('.welcome')) {
+  if (!document.body.classList.contains('focus')) {
     $('threadInner').replaceChildren();
     document.body.classList.add('focus');
   }
@@ -294,7 +298,7 @@ function assistantNode(m) {
     el.classList.toggle('streaming', !!msg.streaming);
     if (msg.thinking) {
       think.hidden = false;
-      think.querySelector('summary').textContent = msg.inThink ? 'Thinking…' : 'Thought it through';
+      think.querySelector('summary').textContent = msg.inThink ? 'Thinking' : 'Thought';
       think.querySelector('.thought').textContent = msg.thinking;
     }
     if (msg.content !== lastContent || msg.streaming || wasStreaming) {
@@ -308,7 +312,7 @@ function assistantNode(m) {
           const bar = h('div', { class: 'progress' }, h('i'));
           bar.firstChild.style.setProperty('--p', Math.round(msg.prefill * 100) + '%');
           body.replaceChildren(h('div', { class: 'prefill' }, 'Reading', bar));
-        } else if (!msg.pendingCall) body.replaceChildren(h('div', { class: 'typing', 'aria-label': 'Rill is typing' }, h('i'), h('i'), h('i')));
+        } else if (!msg.pendingCall) body.replaceChildren(h('div', { class: 'typing', 'aria-label': 'Rill is working' }, h('i')));
       }
     }
     if (!msg.content && !msg.streaming) body.replaceChildren();
@@ -340,7 +344,7 @@ function toolNode(m) {
     el.classList.toggle('running', !!msg.running);
     el.classList.toggle('error', !!msg.error);
     const [ing, ed] = LABELS[msg.name] || ['Working', 'Done'];
-    label.textContent = msg.running ? ing + '…' : ed;
+    label.textContent = msg.running ? ing : ed;
     arg.textContent = toolArg(msg.call);
     const parts = [];
     if (msg.call?.arguments?.code) parts.push(h('div', { class: 'label', text: 'Code' }), h('pre', { text: String(msg.call.arguments.code) }));
@@ -369,7 +373,7 @@ async function createPlan({ title, goal, steps }) {
   await savePlan(plan);
   state.lastCreatedPlan = plan;
   renderPanel();
-  setPanel(true, 'plan');
+  if (!matchMedia('(max-width: 820px)').matches) setPanel(true, 'plan'); // on phones the card in the thread is enough
   return plan;
 }
 
@@ -387,19 +391,18 @@ function planProgress(plan) {
   return { done, total: plan.steps.length, pct: Math.round((done / plan.steps.length) * 100) };
 }
 
-function ring(plan) {
-  const { pct } = planProgress(plan);
-  const r = h('div', { class: 'ring', role: 'img', 'aria-label': pct + '% complete' }, h('span', { text: pct + '%' }));
-  requestAnimationFrame(() => r.style.setProperty('--p', pct));
-  return r;
+function segs(plan) {
+  const { done, total } = planProgress(plan);
+  return h('div', { class: 'segs', role: 'img', 'aria-label': `${done} of ${total} steps done` }, plan.steps.map((s) => h('i', { class: s.status })));
 }
+const planCount = (plan) => h('span', { class: 'plan-count', text: planProgress(plan).done + '/' + plan.steps.length });
 
 function planButtons(plan) {
   const out = [];
   const running = state.runningPlan?.id === plan.id;
   if (running) {
-    out.push(h('button', { class: 'btn btn-soft', type: 'button', onclick: () => { state.pauseRequested = true; toast('Pausing after this step…'); } }, icon('pause'), 'Pause'));
-    out.push(h('button', { class: 'btn btn-ghost', type: 'button', onclick: stop }, icon('stop'), 'Stop now'));
+    if (plan.status !== 'summarising') out.push(h('button', { class: 'btn btn-soft', type: 'button', onclick: () => { state.pauseRequested = true; toast('Pausing after this step.'); } }, icon('pause'), 'Pause'));
+    out.push(h('button', { class: 'btn btn-ghost', type: 'button', onclick: stop }, 'Stop now'));
   } else if (plan.status !== 'done') {
     const label = plan.steps.some((s) => s.status === 'done') ? 'Resume' : 'Run plan';
     out.push(h('button', { class: 'btn btn-primary', type: 'button', disabled: state.busy, onclick: () => startPlan(plan) }, icon('play'), label));
@@ -410,18 +413,21 @@ function planButtons(plan) {
 function planSubtitle(plan) {
   const { done, total } = planProgress(plan);
   const active = plan.steps.find((s) => s.status === 'active');
-  if (plan.status === 'done') return `All ${total} steps done`;
-  if (plan.status === 'summarising') return 'Writing it all up…';
-  if (active) return `Step ${plan.steps.indexOf(active) + 1} of ${total}: ${state.activity || 'working'}`;
-  if (plan.status === 'paused') return `Paused · ${done} of ${total} done`;
-  return `${total} steps`;
+  if (plan.status === 'done') return 'Done';
+  if (plan.status === 'summarising') return 'Writing the summary';
+  if (active) return `Step ${plan.steps.indexOf(active) + 1}: ${active.text}`;
+  if (plan.status === 'paused') return 'Paused';
+  if (plan.status === 'running') return 'Working';
+  return 'Not started';
 }
 
 function fillPlanCard(card, plan) {
   if (!plan) { card.replaceChildren(h('p', { class: 'empty', text: 'Plan removed.' })); return; }
   card.replaceChildren(
-    h('header', {}, ring(plan), h('div', {}, h('h3', { text: plan.title }), h('p', { class: 'meta', text: planSubtitle(plan) }))),
-    h('div', { class: 'actions' }, ...planButtons(plan), h('button', { class: 'btn btn-ghost', type: 'button', onclick: () => setPanel(true, 'plan') }, 'View steps')),
+    h('header', {}, h('h3', { text: plan.title }), planCount(plan)),
+    h('p', { class: 'meta', text: planSubtitle(plan) }),
+    segs(plan),
+    h('div', { class: 'actions' }, ...planButtons(plan), h('button', { class: 'btn btn-ghost', type: 'button', onclick: () => setPanel(true, 'plan') }, 'Steps')),
   );
 }
 
@@ -431,17 +437,19 @@ function refreshPlan(plan) {
   }
   if (state.panelTab === 'plan') renderPanel();
   renderChatList();
+  updateComposer();
 }
 
 async function startPlan(plan) {
-  if (!engine.ready) { toast('Wake Rill first.'); return loadModel(); }
+  if (!engine.ready) await loadModel();
+  if (!engine.ready) return;
   if (state.busy) return;
   if (state.chat?.id !== plan.chatId) await openChat(plan.chatId);
   state.busy = true;
   state.runningPlan = plan;
   state.pauseRequested = false;
   updateComposer();
-  setStatus('busy', 'Working on plan');
+  setStatus('busy', 'Working');
   refreshPlan(plan);
   try {
     await agent.runPlan(plan, {
@@ -456,7 +464,8 @@ async function startPlan(plan) {
       },
     });
     if (plan.status === 'summarising') {
-      setStatus('busy', 'Writing summary');
+      refreshPlan(plan);
+      setStatus('busy', 'Working');
       const temp = agent.summaryMessages(plan);
       const summary = await agent.turn({
         messages: temp, tools: [],
@@ -487,7 +496,7 @@ async function startPlan(plan) {
     refreshPlan(plan);
     saveChat(true);
     updateComposer();
-    setStatus(engine.ready ? 'ready' : 'idle', engine.ready ? readyLabel() : 'Model not loaded');
+    setStatus(engine.ready ? 'ready' : 'idle', engine.ready ? readyLabel() : 'Not loaded');
   }
 }
 
@@ -507,7 +516,6 @@ async function createNote({ title, content }) {
   state.notes.unshift(note);
   await store.put('notes', note);
   if (state.panelTab === 'notes') renderPanel();
-  $('panelBadge').hidden = $('shell').dataset.panel === 'open';
   return note;
 }
 
@@ -516,7 +524,7 @@ function setPanel(open, tab) {
   if (tab) state.panelTab = tab;
   $('shell').dataset.panel = open ? 'open' : 'closed';
   $('togglePanel').setAttribute('aria-expanded', String(open));
-  if (open) $('panelBadge').hidden = true;
+  if (matchMedia('(max-width: 820px)').matches) $('scrim').hidden = !open && $('shell').dataset.sidebar !== 'open';
   renderPanel();
 }
 
@@ -525,6 +533,9 @@ function renderPanel() {
     $('tab-' + t).setAttribute('aria-selected', String(state.panelTab === t));
     $('pane-' + t).hidden = state.panelTab !== t;
   }
+  $('countPlan').textContent = state.plans.filter((p) => p.chatId === state.chat?.id).length || '';
+  $('countFiles').textContent = state.files.length || '';
+  $('countNotes').textContent = state.notes.length || '';
   const pane = $('pane-' + state.panelTab);
   if (state.panelTab === 'plan') pane.replaceChildren(...planPane());
   else if (state.panelTab === 'files') pane.replaceChildren(...filesPane());
@@ -533,16 +544,18 @@ function renderPanel() {
 
 function planPane() {
   const plans = state.plans.filter((p) => p.chatId === state.chat?.id).sort((a, b) => b.created - a.created);
-  if (!plans.length) return [h('div', { class: 'empty' }, icon('check'), 'No plan yet. Ask Rill to break something down — a worksheet, a project, a trip — and the steps will live here.')];
+  if (!plans.length) return [h('p', { class: 'empty', text: 'No plan in this chat. Ask Rill to break something down and the steps appear here.' })];
   const sel = plans.find((p) => p.id === state.selectedPlan) || state.runningPlan || plans[0];
   const out = [
-    h('div', { class: 'plan-head' }, ring(sel), h('div', {}, h('h3', { text: sel.title }), h('p', { text: sel.goal || planSubtitle(sel) }))),
+    h('div', { class: 'plan-head' }, h('h3', { text: sel.title }), planCount(sel)),
+    sel.goal ? h('p', { class: 'plan-goal', text: sel.goal }) : null,
+    segs(sel),
     h('div', { class: 'plan-controls' }, ...planButtons(sel)),
   ];
   const list = h('ol', { class: 'steps' });
   sel.steps.forEach((s, i) => {
     const text = h('div', { class: 'step-text' }, h('span', { class: 't', text: s.text }));
-    if (s.status === 'active') text.append(h('div', { class: 'meta', text: (state.activity || 'working') + '…' }));
+    if (s.status === 'active') text.append(h('div', { class: 'meta', text: state.activity || 'working' }));
     if (s.result) {
       const d = h('details', { class: 'step-result' }, h('summary', { text: 'Result' }));
       d.append(renderMarkdown(s.result));
@@ -553,7 +566,7 @@ function planPane() {
   out.push(list);
   if (plans.length > 1) {
     out.push(h('div', { class: 'plan-picker' }, h('h4', { text: 'Other plans' }),
-      plans.filter((p) => p !== sel).map((p) => h('button', { class: 'btn btn-ghost', type: 'button', onclick: () => { state.selectedPlan = p.id; renderPanel(); } }, `${p.title} · ${planProgress(p).pct}%`))));
+      plans.filter((p) => p !== sel).map((p) => h('button', { class: 'btn btn-ghost', type: 'button', onclick: () => { state.selectedPlan = p.id; renderPanel(); } }, `${p.title} · ${planProgress(p).done}/${p.steps.length}`))));
   }
   return out;
 }
@@ -564,7 +577,7 @@ function filesPane() {
   input.addEventListener('change', () => { addFiles(input.files); input.value = ''; });
   add.append(input);
   const out = [h('div', { class: 'plan-controls' }, add)];
-  if (!state.files.length) out.push(h('div', { class: 'empty' }, icon('file'), `PDFs, text and code files. Read as plain text only — nothing is ever executed. Up to ${LIMITS.files} files.`));
+  if (!state.files.length) out.push(h('p', { class: 'empty', text: `PDF, text and code, up to ${LIMITS.files} files. Read as plain text; nothing in them is run.` }));
   else out.push(h('div', { class: 'list' }, state.files.map((f) => h('div', { class: 'card' },
     h('div', { class: 'card-head' }, icon('file'), h('span', { class: 'title', text: f.name }),
       h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Remove ' + f.name, onclick: () => removeFile(f.id) }, icon('trash'))),
@@ -573,7 +586,7 @@ function filesPane() {
 }
 
 function notesPane() {
-  if (!state.notes.length) return [h('div', { class: 'empty' }, icon('spark'), 'Notes Rill saves for you show up here. Try “save that as a note”.')];
+  if (!state.notes.length) return [h('p', { class: 'empty', text: 'No notes. Ask Rill to save something and it is kept here.' })];
   return [h('div', { class: 'list' }, state.notes.map((n) => {
     const dl = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Download note', title: 'Download .md', onclick: () => download(n.title + '.md', n.content) }, icon('up'));
     const del = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Delete note', onclick: async () => { await store.del('notes', n.id); state.notes = state.notes.filter((x) => x !== n); renderPanel(); } }, icon('trash'));
@@ -625,19 +638,13 @@ async function removeFile(id) {
 }
 
 /* ------------------------------------------------------------ sending */
-function readyLabel() { return engine.info?.device === 'webgpu' ? 'Ready · WebGPU' : engine.info?.device === 'mock' ? 'Demo mode' : 'Ready · CPU'; }
+function readyLabel() { return engine.info?.device === 'webgpu' ? 'WebGPU' : engine.info?.device === 'mock' ? 'Demo' : 'CPU'; }
 
 async function send(text, files = []) {
   text = text.trim();
   if (!text && !files.length) return;
   if (!text) text = 'I attached ' + files.map((f) => f.name).join(', ') + '. Take a look.';
-  if (!engine.ready) {
-    state.queued = { text, files };
-    toast('Waking Rill first — your message will send when it\'s ready.');
-    loadModel();
-    return;
-  }
-  if (state.busy) return;
+  if (state.busy || state.loading) return;
   const chat = state.chat;
   const first = !chat.messages.length;
   const user = { id: uid('m'), role: 'user', content: text, files: files.map((f) => f.name), created: Date.now() };
@@ -648,11 +655,22 @@ async function send(text, files = []) {
   }
   appendMessage(user);
   stick = true; scrollDown(true);
+  saveChat(true);
+  updateComposer();
+  if (!engine.ready) {
+    // The message stays visible while the model loads, with progress under it.
+    const loading = loadModel();
+    const line = loadCard();
+    $('threadInner').append(line);
+    await loading;
+    line.remove();
+    if (!engine.ready) { toast(state.load.error || 'The model did not load.', 'error'); renderChatList(); return; }
+  }
   state.busy = true;
   state.stopped = false;
   state.lastCreatedPlan = null;
   updateComposer();
-  setStatus('busy', 'Thinking');
+  setStatus('busy', 'Working');
   try {
     await agent.turn({
       messages: chat.messages,
@@ -694,8 +712,12 @@ function updateComposer() {
   btn.classList.toggle('stop', state.busy);
   btn.replaceChildren(icon(state.busy ? 'stop' : 'up'));
   btn.setAttribute('aria-label', state.busy ? 'Stop' : 'Send');
-  btn.disabled = !state.busy && !has;
-  $('input').placeholder = state.runningPlan ? 'Rill is working through your plan…' : state.chat?.messages.length ? 'Reply to Rill…' : 'Ask Rill anything…';
+  btn.disabled = !state.busy && (!has || state.loading);
+  $('composer').classList.toggle('has-text', !!has);
+  const run = state.runningPlan;
+  $('composerNote').textContent = run ? `Plan ${planProgress(run).done}/${run.steps.length}` : '';
+  $('thinkToggle').setAttribute('aria-pressed', String(!!state.settings.thinking));
+  $('input').placeholder = state.runningPlan ? 'Working through the plan' : state.chat?.messages.length ? 'Reply' : 'Ask Rill anything';
 }
 
 $('composer').addEventListener('submit', (e) => {
@@ -710,6 +732,7 @@ $('composer').addEventListener('submit', (e) => {
   send(text, files);
 });
 $('input').addEventListener('input', autoGrow);
+new ResizeObserver(() => scrollDown()).observe($('composer')); // keep the last line visible as the composer grows
 $('input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('composer').requestSubmit(); }
 });
@@ -729,11 +752,17 @@ window.addEventListener('drop', (e) => {
 $('input').addEventListener('paste', (e) => { if (e.clipboardData?.files.length) { e.preventDefault(); addFiles(e.clipboardData.files, true); } });
 
 /* ------------------------------------------------------------ chrome */
+const narrow = () => matchMedia('(max-width: 820px)').matches;
 function setSidebar(open) {
   $('shell').dataset.sidebar = open ? 'open' : 'closed';
-  $('scrim').hidden = !open && $('shell').dataset.panel !== 'open';
+  $('scrim').hidden = !narrow() || (!open && $('shell').dataset.panel !== 'open');
 }
-$('toggleSidebar').addEventListener('click', () => setSidebar($('shell').dataset.sidebar !== 'open'));
+$('toggleSidebar').addEventListener('click', () => setSidebar(false));
+$('openSidebar').addEventListener('click', () => setSidebar(true));
+for (const [id, tab] of [['navPlan', 'plan'], ['navFiles', 'files'], ['navNotes', 'notes']]) {
+  $(id).addEventListener('click', () => { if (narrow()) setSidebar(false); setPanel(true, tab); if (narrow()) $('scrim').hidden = false; });
+}
+$('thinkToggle').addEventListener('click', () => { state.settings.thinking = !state.settings.thinking; saveSettings(state.settings); updateComposer(); });
 $('scrim').addEventListener('click', () => { setSidebar(false); setPanel(false); $('scrim').hidden = true; });
 $('togglePanel').addEventListener('click', () => {
   const open = $('shell').dataset.panel !== 'open';
@@ -746,7 +775,7 @@ $('newChat').addEventListener('click', newChat);
 $('statusPill').addEventListener('click', () => {
   if (!engine.ready) return loadModel();
   const last = [...(state.chat?.messages || [])].reverse().find((m) => m.stats?.tokensPerSecond);
-  toast(`LFM3 1.7B · ${engine.info.device} · ${engine.info.dtype}${last ? ` · ${last.stats.tokensPerSecond} tok/s` : ''}`);
+  toast(`LFM3 1.7B, ${engine.info.device}, ${engine.info.dtype}${last ? `, ${last.stats.tokensPerSecond} tokens/s` : ''}`);
 });
 window.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); newChat(); }
@@ -772,6 +801,7 @@ $('settings').addEventListener('close', () => {
   saveSettings(s);
   if (deviceChanged && engine.ready) toast('Compute change applies after a reload.');
   if (!state.chat?.messages.length) renderWelcome();
+  updateComposer();
 });
 $('clearData').addEventListener('click', async () => {
   if (!confirm('Erase all chats, plans, files and notes from this browser?')) return;
@@ -790,7 +820,7 @@ async function boot() {
   if (matchMedia('(max-width: 820px)').matches) setSidebar(false);
   await newChat();
   updateComposer();
-  if (MOCK && params.has('autoload')) loadModel();
+  if (MOCK) loadModel(); // the scripted engine has nothing to download
   // Interrupted plans (tab closed mid-run) are marked paused at boot so the UI
   // never claims work is happening when it is not.
   resumeInterrupted();

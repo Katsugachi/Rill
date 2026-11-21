@@ -18,7 +18,7 @@ through [Transformers.js](https://github.com/huggingface/transformers.js). No se
 | **Remember** | Saves notes you ask it to keep and includes them in later chats. |
 
 Everything (chats, files, plans, notes) stays in your browser's IndexedDB. The model downloads
-once (about 1.1 GB for the WebGPU build) and is cached.
+once (about 1 GB for the WebGPU build) and is cached.
 
 ## Requirements
 
@@ -61,11 +61,12 @@ The e2e script needs `pip install playwright` and a Chromium (set `CHROME=/path/
 - [Architecture](docs/ARCHITECTURE.md): how the agent loop, model worker, tools and UI fit together.
 - [Security audit](docs/SECURITY.md): threat model, XSS review, sandbox design and residual risks.
 - [Deployment](docs/DEPLOY.md): GitHub Pages and other static hosts.
+- [Design](docs/DESIGN.md): the interface rules and the critique rounds behind them.
 - [Design notes and improvements](docs/IMPROVEMENTS.md): decisions made along the way and what to do next.
 
 ## Credits
 
 - Model: LiquidAI LFM3-1.7B (LFM Open License v1.0). Weights are downloaded from Hugging Face at runtime and are not stored in this repo.
-- Vendored: Transformers.js 4.3.2 (Apache-2.0), ONNX Runtime Web 1.31 dev (MIT), pdf.js 5.4 (Apache-2.0), Inter and Fraunces (OFL).
+- Vendored: Transformers.js 4.3.2 (Apache-2.0), ONNX Runtime Web 1.31 dev (MIT), pdf.js 5.4 (Apache-2.0), Inter (OFL).
 - Personality adapted from the publicly shared system prompt of [Poke](https://poke.com) by The Interaction Company.
 - Backdrop artwork supplied by the project owner.

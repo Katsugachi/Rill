@@ -6,7 +6,7 @@ Decisions made while building Rill, problems found along the way, and what to do
 
 - **The ONNX build of LFM3, not the original weights.** `LiquidAI/LFM3-1.7B` is a PyTorch
   checkpoint. Browsers need ONNX, so Rill loads `onnx-community/LFM3-1.7B-ONNX`, which is the same model
-  exported and quantised. `q4f16` (~1.1 GB) is the best fit for WebGPU.
+  exported and quantised. `q4f16` (about 1 GB) is the best fit for WebGPU.
 - **No build step.** Plain ES modules and vendored libraries keep the Pages deploy trivial and the
   supply chain small. The cost is a slightly larger first load than a bundled, tree-shaken build.
 - **The model's native XML tool format.** LFM3's template renders tools in its own XML style.
@@ -60,4 +60,4 @@ Decisions made while building Rill, problems found along the way, and what to do
 7. **Scanned PDFs.** Add OCR (Tesseract.js) as an opt-in for image-only PDFs, which currently extract no text.
 8. **Offline PWA.** Add a service worker for the app shell, so Rill opens with no network once the model is cached.
 9. **Accessibility pass** with a screen reader: the live region for streaming text and the focus order in the drawers.
-10. **Logo polish.** `assets/logo.svg` is a first draft: a sun over two winding streams. A wordmark and favicon set would come next.
+10. **Logo polish.** `assets/logo.svg` is a flat first draft: two streams and a sun. A wordmark and favicon set would come next.

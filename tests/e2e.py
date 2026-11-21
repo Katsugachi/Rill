@@ -34,10 +34,11 @@ with sync_playwright() as p:
     page.on("dialog", lambda d: (dialogs.append(d.message), d.dismiss()))
     page.goto(URL + "?mock")
     page.wait_for_selector(".welcome")
-    page.screenshot(path=f"{SHOTS}/01-welcome.png")
-    page.click("text=Wake Rill")
     page.wait_for_selector("#statusPill[data-state=ready]")
-    check(page.locator(".load-card").count() == 0, "load card hides when ready")
+    check(page.locator("#loadCard").count() == 0, "model line hides when ready")
+    check(page.inner_text("#statusText") == "Demo", "status reads Demo in demo mode")
+    page.wait_for_timeout(400)
+    page.screenshot(path=f"{SHOTS}/01-welcome.png")
 
     # Maths -> run_js tool in sandbox
     page.fill("#input", "What is 17.5% of 2349.80?")
@@ -89,6 +90,8 @@ with sync_playwright() as p:
     plan = page.evaluate("window.rill.state.plans.at(-1)")
     check(all(s["status"] == "done" and s["result"] for s in plan["steps"]), "plan: every step done with a result")
     check(page.locator(".msg-assistant .md h2, .msg-assistant .md h3").count() > 0, "plan: summary rendered")
+    check(page.locator(".caret").count() == 0 and page.locator(".typing").count() == 0, "no streaming indicators left after finishing")
+    page.wait_for_timeout(3500)
     page.screenshot(path=f"{SHOTS}/04-plan-done.png")
 
     # Upload text + PDF-type validation
@@ -105,6 +108,10 @@ with sync_playwright() as p:
     check(page.locator("#pane-files .card").count() == 1, "upload: file listed in panel")
     page.screenshot(path=f"{SHOTS}/05-files.png")
 
+    page.click("#closePanel"); page.click("#openSettings"); page.wait_for_timeout(400)
+    page.screenshot(path=f"{SHOTS}/07-settings.png")
+    page.keyboard.press("Escape")
+
     # Persistence across reload
     page.reload(); page.wait_for_selector(".chat-item")
     check(page.locator(".chat-item").count() >= 1, "chats persisted across reload")
@@ -112,7 +119,16 @@ with sync_playwright() as p:
     # Mobile layout
     m = browser.new_page(viewport={"width": 390, "height": 844})
     m.goto(URL + "?mock"); m.wait_for_selector(".welcome")
+    m.wait_for_selector("#statusPill[data-state=ready]", state="attached"); m.wait_for_timeout(400)
     m.screenshot(path=f"{SHOTS}/06-mobile.png")
+    m.fill("#input", "What is 17.5% of 2349.80?"); m.keyboard.press("Enter")
+    m.wait_for_selector(".tool:not(.running)"); wait_until(m, "() => !window.rill.state.busy"); m.wait_for_timeout(500)
+    m.screenshot(path=f"{SHOTS}/08-mobile-chat.png")
+    # Real (non-demo) welcome: model not loaded
+    r = browser.new_page(viewport={"width": 1440, "height": 900})
+    r.goto(URL); r.wait_for_selector("#loadCard"); r.wait_for_timeout(500)
+    check(r.inner_text("#statusText") == "Not loaded", "status reads Not loaded before loading")
+    r.screenshot(path=f"{SHOTS}/00-welcome-unloaded.png")
 
     real = [e for e in errors if "favicon" not in e]
     check(not real, "no console errors: " + json.dumps(real[:5]))

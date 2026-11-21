@@ -82,15 +82,13 @@ through a long worksheet one part at a time.
 
 ## UI (`index.html`, `css/rill.css`, `js/app.js`)
 
-- Three columns: chats, conversation, and a panel with Plan, Files and Notes. The side columns become drawers on small screens.
-- Design tokens: a low-blackpoint palette (the darkest colour is indigo `#0f1130`, never black),
-  lavender, peach and mint accents, and Fraunces for display text with Inter for UI text.
-- The supplied artwork is the backdrop, with an indigo tint and a fine grain so text stays readable.
-- Motion: one easing curve (`--ease`), 160–420 ms durations, and transitions on hover, focus,
-  open/close, message entry, the progress ring and step checks. `prefers-reduced-motion` turns all of this off.
-- Engagement by design: a time-of-day greeting, three starter tasks, a visible progress ring on
-  plans, a small check animation as each step finishes, and a toast when a long plan is done.
-  These give feedback and a sense of progress without badges, streaks or nagging.
+- Three columns: a sidebar (new chat, Plans, Files, Notes, chats, model state), the conversation, and a
+  panel with Plan, Files and Notes. The side columns become drawers on small screens.
+- The supplied artwork fills the main area untouched. On the home screen one solid block (greeting,
+  composer, starter tasks) sits on it. In a chat, the conversation is an opaque reading column set on
+  the artwork, which stays visible in the margins on wide screens.
+- The rules behind the look are in [DESIGN.md](DESIGN.md): flat surfaces, one typeface, one accent
+  colour used for state only.
 
 ## Demo mode
 
