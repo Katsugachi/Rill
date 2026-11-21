@@ -642,6 +642,7 @@ async function send(text, files = []) {
   appendMessage(user);
   stick = true; scrollDown(true);
   state.busy = true;
+  state.stopped = false;
   state.lastCreatedPlan = null;
   updateComposer();
   setStatus('busy', 'Thinking');
@@ -663,10 +664,11 @@ async function send(text, files = []) {
     setStatus('ready', readyLabel());
   }
   const plan = state.lastCreatedPlan;
-  if (plan && state.settings.autoRun && plan.chatId === chat.id) startPlan(plan);
+  if (plan && state.settings.autoRun && !state.stopped && plan.chatId === chat.id) startPlan(plan);
 }
 
 function stop() {
+  state.stopped = true;
   if (state.runningPlan) state.pauseRequested = true;
   agent.stop();
 }
