@@ -592,7 +592,7 @@ function download(name, text) {
 /* ------------------------------------------------------------ files */
 async function addFiles(list, toComposer = false) {
   for (const file of [...list]) {
-    if (state.files.length + state.pending.length >= LIMITS.files) { toast(`Up to ${LIMITS.files} files.`, 'error'); break; }
+    if (state.files.length >= LIMITS.files) { toast(`Up to ${LIMITS.files} files.`, 'error'); break; }
     const chip = toComposer ? pendingChip(file.name) : null;
     try {
       const f = await ingest(file, (p, n) => chip && (chip.querySelector('.meta').textContent = `page ${p}/${n}`));
