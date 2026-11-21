@@ -1,9 +1,12 @@
 # Rill
 
-A calm, private assistant for everyday tasks that runs **entirely in your browser**.
+A web based private assistant for everyday tasks that runs **entirely in your browser**.
 Rill is powered by [LiquidAI LFM3-1.7B](https://huggingface.co/LiquidAI/LFM3-1.7B)
 (the [ONNX build](https://huggingface.co/onnx-community/LFM3-1.7B-ONNX)) on **WebGPU**
-through [Transformers.js](https://github.com/huggingface/transformers.js). No server, no account, no API key.
+through [Transformers.js](https://github.com/huggingface/transformers.js).
+
+
+## Live Demo
 
 ## What it can do
 
@@ -36,14 +39,6 @@ python3 -m http.server 8080
 
 Opening `index.html` from `file://` won't work, because module workers need HTTP.
 
-## Deploy to GitHub Pages
-
-1. Push to `main`.
-2. In **Settings → Pages**, set **Source** to **GitHub Actions**.
-3. The workflow in `.github/workflows/pages.yml` runs the unit tests and publishes the site.
-
-All paths are relative, so the site works under `https://<user>.github.io/<repo>/`. See [docs/DEPLOY.md](docs/DEPLOY.md).
-
 ## Tests
 
 ```bash
@@ -67,4 +62,3 @@ The e2e script needs `pip install playwright` and a Chromium (set `CHROME=/path/
 - Model: LiquidAI LFM3-1.7B (LFM Open License v1.0). Weights are downloaded from Hugging Face at runtime and are not stored in this repo.
 - Vendored: Transformers.js 4.3.2 (Apache-2.0), ONNX Runtime Web 1.31 dev (MIT), pdf.js 5.4 (Apache-2.0), Inter (OFL).
 - Personality follows the publicly shared prompt guidelines of [Poke](https://poke.com) by The Interaction Company, minus the parts about messaging apps, email and background agents.
-- Home-screen clips supplied by the project owner.
