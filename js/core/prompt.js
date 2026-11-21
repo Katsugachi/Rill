@@ -34,7 +34,7 @@ export function systemPrompt({ name = '', now = new Date(), files = [], notes = 
   }
   if (notes.length) {
     lines.push('', 'Saved notes:');
-    for (const n of notes.slice(0, 8)) lines.push(`- ${n.title}`);
+    for (const n of notes.slice(0, 8)) lines.push(`- ${n.title}: ${String(n.content || '').replace(/\s+/g, ' ').slice(0, 300)}`);
   }
   return lines.join('\n');
 }
