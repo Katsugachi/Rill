@@ -168,7 +168,7 @@ body.focus .greeting { display: none; }
 .welcome h2 { font-size: var(--t-display); line-height: 1.15; font-weight: 600; letter-spacing: -.03em; }
 .model-line { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; color: var(--muted); }
 .welcome .model-line { margin-top: 12px; }
-.model-line .rill-progress { flex-basis: 100%; max-width: var(--w); margin-top: 4px; }
+.model-line .rill-progress { flex-basis: 100%; max-width: var(--w); margin-top: 4px; overflow: hidden; }
 .model-line .sq { margin: 0 2px 0 0; }
 .model-line b { font-weight: 500; color: var(--text); }
 .model-line .dim { font-size: var(--t-meta); color: var(--faint); font-variant-numeric: tabular-nums; }
