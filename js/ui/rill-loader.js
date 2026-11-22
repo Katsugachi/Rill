@@ -4,6 +4,9 @@
 // rather than a spinning wheel. Built with DOM/SVG APIs only.
 const NS = 'http://www.w3.org/2000/svg';
 const ARMS = 3;
+// Keep in step with the eddy-turn and eddy-breathe durations in css/rill.css.
+const TURN = 3200;
+const BEAT = 1600;
 
 // One arm of an Archimedean spiral, from radius 2.6 to 9.4 over 150 degrees.
 function arm(start) {
@@ -23,6 +26,11 @@ export function eddy(size = 16, label = 'Working') {
   const box = document.createElement('span');
   box.className = 'eddy';
   box.style.setProperty('--s', size + 'px');
+  // Phase-lock to the page clock, so an eddy that replaces another (each progress
+  // update re-renders its line) carries on the same motion instead of restarting.
+  const now = document.timeline?.currentTime ?? performance.now();
+  box.style.setProperty('--t-turn', -Math.round(now % TURN) + 'ms');
+  box.style.setProperty('--t-beat', -Math.round(now % BEAT) + 'ms');
   box.setAttribute('role', 'img');
   box.setAttribute('aria-label', label);
   const s = document.createElementNS(NS, 'svg');
