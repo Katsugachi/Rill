@@ -104,8 +104,8 @@ function scheduleLoadRender() {
 /* ------------------------------------------------------------ welcome */
 function greeting() {
   const hr = new Date().getHours();
-  const part = hr < 5 ? 'Still up' : hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening';
-  return part + (state.settings.name ? ', ' + state.settings.name : '');
+  const [part, end] = hr < 5 ? ['Still up', '?'] : hr < 12 ? ['Good morning', ''] : hr < 18 ? ['Good afternoon', ''] : ['Good evening', ''];
+  return part + (state.settings.name ? ', ' + state.settings.name : '') + end;
 }
 
 const STARTERS = [
