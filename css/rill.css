@@ -168,7 +168,6 @@ body.focus .greeting { display: none; }
 .welcome h2 { font-size: var(--t-display); line-height: 1.15; font-weight: 600; letter-spacing: -.03em; }
 .model-line { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; color: var(--muted); }
 .welcome .model-line { margin-top: 12px; }
-.model-line .rill-progress { flex-basis: 100%; max-width: var(--w); margin-top: 4px; overflow: hidden; }
 .model-line .sq { margin: 0 2px 0 0; }
 .model-line b { font-weight: 500; color: var(--text); }
 .model-line .dim { font-size: var(--t-meta); color: var(--faint); font-variant-numeric: tabular-nums; }
@@ -228,24 +227,18 @@ body:not(.focus) .composer:not(.has-text) .starters { display: flex; }
 @media (hover: none) { .copy-btn { opacity: 1; } }
 .caret::after { content: ''; display: inline-block; width: 7px; height: 7px; margin-left: 5px; vertical-align: baseline; background: var(--accent); animation: blink 1.1s var(--ease) infinite; }
 .typing { display: flex; align-items: center; height: 24px; }
-.prefill { display: flex; align-items: center; gap: 12px; color: var(--muted); height: 24px; }
+.prefill { display: flex; align-items: center; gap: 8px; color: var(--muted); height: 24px; }
+.prefill .dim { font-size: var(--t-meta); color: var(--faint); font-variant-numeric: tabular-nums; }
 
-/* ---------- Loading mark: a drawn rill (js/ui/rill-loader.js) ---------- */
-.rill { position: relative; display: inline-block; flex: none; width: var(--w); height: 14px; line-height: 0; vertical-align: middle; }
-.rill svg { display: block; overflow: visible; }
-.rill path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.rill-bed { stroke: var(--faint); stroke-width: 1.5; opacity: .55; }
-.rill-under { stroke: var(--faint); stroke-width: 1; opacity: .3; }
-.rill-glint { stroke: var(--accent); stroke-width: 1.75; animation: rill-glint 2.4s linear infinite; }
-.rill-flow { animation: rill-drift 6s linear infinite; }
-.rill-flow-slow { animation-duration: 11s; }
-.rill > .rill-water { -webkit-mask: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); mask: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); animation: rill-draw 700ms var(--ease) both; }
-.rill-course { stroke: var(--line-strong); stroke-width: 1.5; stroke-dasharray: 0 5; opacity: .8; }
-.rill-fill { position: absolute; inset: 0 auto 0 0; width: var(--p, 0%); overflow: hidden; transition: width var(--med) linear; }
-.rill-progress .rill-bed { opacity: .9; }
-@keyframes rill-draw { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
-@keyframes rill-drift { from { transform: translateX(-88px); } to { transform: none; } }
-@keyframes rill-glint { from { stroke-dashoffset: 0; } to { stroke-dashoffset: var(--run); } }
+/* ---------- Loading mark: a small eddy (js/ui/rill-loader.js) ---------- */
+.eddy { display: inline-grid; place-items: center; flex: none; width: var(--s); height: var(--s); vertical-align: middle; color: var(--accent); }
+.eddy svg { width: 100%; height: 100%; overflow: visible; }
+.eddy-turn { transform-origin: 12px 12px; animation: eddy-turn 3.2s linear infinite; }
+.eddy-arm { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: .8 1; animation: eddy-breathe 1.6s var(--ease) infinite; animation-delay: calc(var(--i) * -0.533s); }
+.eddy-core { fill: currentColor; transform-origin: 12px 12px; animation: eddy-core 1.6s var(--ease) infinite; }
+@keyframes eddy-turn { to { transform: rotate(360deg); } }
+@keyframes eddy-breathe { 0%, 100% { stroke-dasharray: .28 1; opacity: .55; } 50% { stroke-dasharray: .92 1; opacity: 1; } }
+@keyframes eddy-core { 0%, 100% { transform: scale(1); } 50% { transform: scale(.7); } }
 .thinking { margin-bottom: 8px; color: var(--muted); }
 .thinking summary, .tool summary, .step-result summary { cursor: pointer; list-style: none; }
 .thinking summary::-webkit-details-marker, .tool summary::-webkit-details-marker, .step-result summary::-webkit-details-marker { display: none; }
@@ -259,10 +252,9 @@ body:not(.focus) .composer:not(.has-text) .starters { display: flex; }
 .tool summary:hover { color: var(--text); }
 .tool .ti { display: grid; place-items: center; width: 14px; height: 14px; flex: none; color: var(--faint); }
 .tool .ti .i { width: 13px; height: 13px; }
-.tool .ti .rill { display: none; }
+.tool .ti .eddy { display: none; }
 .tool.running .ti .i { display: none; }
-.tool.running .ti .rill { display: inline-block; }
-.tool.running .ti { width: 24px; }
+.tool.running .ti .eddy { display: inline-grid; }
 .tool.error .ti { color: var(--danger); }
 .tool-label { flex: none; }
 .tool-arg { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: var(--t-meta) var(--mono); color: var(--faint); }
@@ -314,7 +306,6 @@ body:not(.focus) .composer:not(.has-text) .starters { display: flex; }
 .step-dot { display: grid; place-items: center; width: 16px; height: 20px; color: var(--faint); }
 .step-dot .i { display: none; width: 13px; height: 13px; }
 .step-dot::before { content: ''; width: 6px; height: 6px; border: 1px solid var(--faint); }
-.step.active .step-dot { width: 24px; }
 .step.active .step-dot::before { display: none; }
 .step.done .step-dot::before { display: none; }
 .step.done .step-dot .i { display: block; animation: pop var(--med) var(--ease); }

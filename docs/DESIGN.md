@@ -30,13 +30,13 @@ the critique rounds that produced it.
    sits on a solid surface.
 10. **Motion explains a change.** 120ms for hover and press, 220ms for things that enter, open or
    move. One easing curve. `prefers-reduced-motion` turns it off.
-11. **One loading mark: a drawn rill.** Every wait (the first token, reading a long conversation,
-   a running tool or plan step, the model download) shows the same small stream
-   (`js/ui/rill-loader.js`). It draws itself in from the left, then the water drifts right while two
-   accent glints run along it faster, over a thinner, slower current underneath, which gives it depth.
-   The crests are uneven so it reads as drawn rather than plotted. With a known amount (download,
-   reading) the stream fills a dotted course from left to right instead. Under reduced motion it is a
-   still drawing.
+11. **One loading mark: a small eddy.** Every wait (the first token, reading a long conversation,
+   a running tool or plan step, the model download) shows the same letter-sized mark
+   (`js/ui/rill-loader.js`): three accent strokes curling out from a still centre, like water turning
+   in a rill. The eddy turns once every 3.2s while each stroke lengthens and draws back in turn, a third
+   of a beat apart, and the centre gently contracts, so it reads as moving water rather than a
+   spinning wheel. Known amounts (download, reading) are a plain percentage beside it, not a bar.
+   Under reduced motion it is a still eddy.
 12. **Secondary actions wait for hover.** Copy is a 15px icon in a 28px target, shown when the reply
    or code block is hovered or focused (always on touch screens), so it is never read as part of the text.
 
@@ -89,6 +89,9 @@ clips were re-encoded to 0.9 MB and 1.8 MB. The dark clip is anchored right so t
 looked jammed; it now sits 12px in. "Copy" was body-sized grey text under every reply and read as part
 of the answer; it became a hover-only icon. The blinking squares used for loading were replaced by the
 drawn rill (rule 11).
+
+**Round 8 (owner feedback).** The drawn stream and its progress bars were too wide and broke the
+minimalism. Replaced with the letter-sized eddy in rule 11; download and reading progress became text.
 
 ## Known gaps
 

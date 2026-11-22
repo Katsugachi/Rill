@@ -91,7 +91,7 @@ with sync_playwright() as p:
     check(all(s["status"] == "done" and s["result"] for s in plan["steps"]), "plan: every step done with a result")
     check(page.locator(".msg-assistant .md h2, .msg-assistant .md h3").count() > 0, "plan: summary rendered")
     check(page.locator(".caret").count() == 0 and page.locator(".typing").count() == 0, "no streaming indicators left after finishing")
-    check(page.evaluate("() => [...document.querySelectorAll('.rill')].filter(r => r.getClientRects().length).length") == 0,
+    check(page.evaluate("() => [...document.querySelectorAll('.eddy')].filter(r => r.getClientRects().length).length") == 0,
           "no loading marks left after finishing")
     reply = page.locator(".msg-assistant").last
     btn = reply.locator(".copy-btn")

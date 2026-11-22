@@ -8,7 +8,7 @@ import { ingest, ACCEPT, LIMITS } from './tools/files.js';
 import { LABELS } from './tools/index.js';
 import { renderMarkdown } from './ui/markdown.js';
 import { h, icon, fmtBytes, toast, copyButton } from './ui/dom.js';
-import { rill, setRillProgress } from './ui/rill-loader.js';
+import { eddy } from './ui/rill-loader.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -137,20 +137,22 @@ function loadCard() {
     line.append(h('span', { class: 'sq' }), h('span', { text: state.load.error + (state.settings.device !== 'wasm' ? ' You can switch to CPU in Settings.' : '') }),
       h('button', { class: 'link', type: 'button', onclick: loadModel }, 'Try again'));
   } else {
-    const bar = rill(240, { progress: 0, label: 'Model download' });
-    bar.id = 'loadBar';
-    line.append(h('b', { id: 'loadStage', text: state.load.stage || 'Loading the model' }), h('span', { class: 'dim', id: 'loadBytes' }), bar);
+    line.setAttribute('role', 'progressbar');
+    line.setAttribute('aria-label', 'Model download');
+    line.setAttribute('aria-valuemin', '0');
+    line.setAttribute('aria-valuemax', '100');
+    line.append(eddy(16, 'Loading'), h('b', { id: 'loadStage', text: state.load.stage || 'Loading the model' }), h('span', { class: 'dim', id: 'loadBytes' }));
   }
   return line;
 }
 
 function updateLoadCard() {
-  const bar = $('loadBar');
-  if (!bar) return;
+  const card = $('loadCard');
+  if (!card || card.classList.contains('warn')) return;
   let loaded = 0; let total = 0;
   for (const f of Object.values(state.load.files)) { loaded += f.loaded; total += f.total; }
   const pct = total ? Math.min(100, (loaded / total) * 100) : 0;
-  setRillProgress(bar, pct / 100);
+  card.setAttribute('aria-valuenow', Math.round(pct));
   $('loadStage').textContent = state.load.stage || 'Loading';
   if (state.load.note && !total) $('loadBytes').textContent = state.load.note;
   if (total) $('loadBytes').textContent = `${fmtBytes(loaded)} of ${fmtBytes(total)} · ${Math.round(pct)}%`;
@@ -306,8 +308,8 @@ function assistantNode(m) {
       body.replaceChildren(md);
       if (msg.streaming && !msg.content && !msg.inThink) {
         if (msg.prefill != null && msg.prefill < 1) {
-          body.replaceChildren(h('div', { class: 'prefill' }, 'Reading', rill(96, { progress: msg.prefill, label: 'Reading the conversation' })));
-        } else if (!msg.pendingCall) body.replaceChildren(h('div', { class: 'typing' }, rill(48, { label: 'Rill is working' })));
+          body.replaceChildren(h('div', { class: 'prefill' }, eddy(16, 'Reading the conversation'), 'Reading', h('span', { class: 'dim', text: Math.round(msg.prefill * 100) + '%' })));
+        } else if (!msg.pendingCall) body.replaceChildren(h('div', { class: 'typing' }, eddy(16, 'Rill is working')));
       }
     }
     if (!msg.content && !msg.streaming) body.replaceChildren();
@@ -332,7 +334,7 @@ function toolNode(m) {
   const el = h('details', { class: 'tool' });
   const label = h('span', { class: 'tool-label' });
   const arg = h('span', { class: 'tool-arg' });
-  el.append(h('summary', {}, h('span', { class: 'ti' }, icon('check'), rill(24)), label, arg));
+  el.append(h('summary', {}, h('span', { class: 'ti' }, icon('check'), eddy(14, 'Running')), label, arg));
   const detail = h('div', { class: 'tool-detail' });
   el.append(detail);
   const update = (msg) => {
@@ -554,7 +556,7 @@ function planPane() {
       d.append(renderMarkdown(s.result));
       text.append(d);
     }
-    list.append(h('li', { class: 'step ' + s.status, 'aria-label': `Step ${i + 1}, ${s.status}` }, h('span', { class: 'step-dot' }, s.status === 'active' ? rill(24) : icon('check')), text));
+    list.append(h('li', { class: 'step ' + s.status, 'aria-label': `Step ${i + 1}, ${s.status}` }, h('span', { class: 'step-dot' }, s.status === 'active' ? eddy(14, 'In progress') : icon('check')), text));
   });
   out.push(list);
   if (plans.length > 1) {
