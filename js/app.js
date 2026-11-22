@@ -7,7 +7,8 @@ import { store, loadSettings, saveSettings } from './core/store.js';
 import { ingest, ACCEPT, LIMITS } from './tools/files.js';
 import { LABELS } from './tools/index.js';
 import { renderMarkdown } from './ui/markdown.js';
-import { h, icon, fmtBytes, toast } from './ui/dom.js';
+import { h, icon, fmtBytes, toast, copyButton } from './ui/dom.js';
+import { rill, setRillProgress } from './ui/rill-loader.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -136,8 +137,9 @@ function loadCard() {
     line.append(h('span', { class: 'sq' }), h('span', { text: state.load.error + (state.settings.device !== 'wasm' ? ' You can switch to CPU in Settings.' : '') }),
       h('button', { class: 'link', type: 'button', onclick: loadModel }, 'Try again'));
   } else {
-    line.append(h('span', { class: 'sq live' }), h('b', { id: 'loadStage', text: state.load.stage || 'Loading the model' }), h('span', { class: 'dim', id: 'loadBytes' }),
-      h('div', { class: 'progress', role: 'progressbar', 'aria-label': 'Model download', 'aria-valuemin': 0, 'aria-valuemax': 100, id: 'loadBar' }, h('i')));
+    const bar = rill(240, { progress: 0, label: 'Model download' });
+    bar.id = 'loadBar';
+    line.append(h('b', { id: 'loadStage', text: state.load.stage || 'Loading the model' }), h('span', { class: 'dim', id: 'loadBytes' }), bar);
   }
   return line;
 }
@@ -148,8 +150,7 @@ function updateLoadCard() {
   let loaded = 0; let total = 0;
   for (const f of Object.values(state.load.files)) { loaded += f.loaded; total += f.total; }
   const pct = total ? Math.min(100, (loaded / total) * 100) : 0;
-  bar.firstChild.style.setProperty('--p', pct.toFixed(1) + '%');
-  bar.setAttribute('aria-valuenow', Math.round(pct));
+  setRillProgress(bar, pct / 100);
   $('loadStage').textContent = state.load.stage || 'Loading';
   if (state.load.note && !total) $('loadBytes').textContent = state.load.note;
   if (total) $('loadBytes').textContent = `${fmtBytes(loaded)} of ${fmtBytes(total)} · ${Math.round(pct)}%`;
@@ -305,16 +306,15 @@ function assistantNode(m) {
       body.replaceChildren(md);
       if (msg.streaming && !msg.content && !msg.inThink) {
         if (msg.prefill != null && msg.prefill < 1) {
-          const bar = h('div', { class: 'progress' }, h('i'));
-          bar.firstChild.style.setProperty('--p', Math.round(msg.prefill * 100) + '%');
-          body.replaceChildren(h('div', { class: 'prefill' }, 'Reading', bar));
-        } else if (!msg.pendingCall) body.replaceChildren(h('div', { class: 'typing', 'aria-label': 'Rill is working' }, h('i')));
+          body.replaceChildren(h('div', { class: 'prefill' }, 'Reading', rill(96, { progress: msg.prefill, label: 'Reading the conversation' })));
+        } else if (!msg.pendingCall) body.replaceChildren(h('div', { class: 'typing' }, rill(48, { label: 'Rill is working' })));
       }
     }
     if (!msg.content && !msg.streaming) body.replaceChildren();
     meta.replaceChildren();
     if (!msg.streaming && msg.content) {
-      meta.append(h('button', { type: 'button', onclick: async (e) => { await navigator.clipboard.writeText(msg.content).catch(() => {}); e.target.textContent = 'Copied'; setTimeout(() => { e.target.textContent = 'Copy'; }, 1200); } }, 'Copy'));
+      const text = msg.content;
+      meta.append(copyButton(() => text));
       if (msg.aborted) meta.append(h('span', { text: 'Stopped' }));
     }
   };
@@ -332,7 +332,7 @@ function toolNode(m) {
   const el = h('details', { class: 'tool' });
   const label = h('span', { class: 'tool-label' });
   const arg = h('span', { class: 'tool-arg' });
-  el.append(h('summary', {}, h('span', { class: 'ti' }, icon('check')), label, arg));
+  el.append(h('summary', {}, h('span', { class: 'ti' }, icon('check'), rill(24)), label, arg));
   const detail = h('div', { class: 'tool-detail' });
   el.append(detail);
   const update = (msg) => {
@@ -554,7 +554,7 @@ function planPane() {
       d.append(renderMarkdown(s.result));
       text.append(d);
     }
-    list.append(h('li', { class: 'step ' + s.status, 'aria-label': `Step ${i + 1}, ${s.status}` }, h('span', { class: 'step-dot' }, icon('check')), text));
+    list.append(h('li', { class: 'step ' + s.status, 'aria-label': `Step ${i + 1}, ${s.status}` }, h('span', { class: 'step-dot' }, s.status === 'active' ? rill(24) : icon('check')), text));
   });
   out.push(list);
   if (plans.length > 1) {

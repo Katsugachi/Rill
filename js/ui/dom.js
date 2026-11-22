@@ -14,6 +14,19 @@ export function h(tag, attrs = {}, ...children) {
   return n;
 }
 export const icon = (name) => h('span', { class: 'i i-' + name, 'aria-hidden': 'true' });
+// Icon-only copy control; swaps to a tick for a moment after copying.
+export function copyButton(getText, label = 'Copy') {
+  const b = h('button', { type: 'button', class: 'copy-btn', 'aria-label': label, title: label }, icon('copy'));
+  b.addEventListener('click', async () => {
+    let ok = true;
+    try { await navigator.clipboard.writeText(getText()); } catch { ok = false; }
+    b.classList.toggle('done', ok);
+    b.replaceChildren(icon(ok ? 'check' : 'x'));
+    b.setAttribute('aria-label', ok ? 'Copied' : 'Copy failed');
+    setTimeout(() => { b.classList.remove('done'); b.replaceChildren(icon('copy')); b.setAttribute('aria-label', label); }, 1400);
+  });
+  return b;
+}
 export function fmtBytes(n) {
   if (!n) return '0 B';
   const u = ['B', 'KB', 'MB', 'GB'];
