@@ -1,6 +1,6 @@
 # Rill
 
-A web based private assistant for everyday tasks that runs **entirely in your browser**.
+A web based local assistant for everyday tasks that runs in your browser.
 Rill is powered by [LiquidAI LFM3-1.7B](https://huggingface.co/LiquidAI/LFM3-1.7B)
 (the [ONNX build](https://huggingface.co/onnx-community/LFM3-1.7B-ONNX)) on **WebGPU**
 through [Transformers.js](https://github.com/huggingface/transformers.js).
