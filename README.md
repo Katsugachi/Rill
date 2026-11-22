@@ -7,10 +7,8 @@ through [Transformers.js](https://github.com/huggingface/transformers.js).
 
 
 ## Live Demo
-
+https://katsugachi.github.io/Rill/
 ## What it can do
-
-| | |
 |---|---|
 | **Read your files** | Drop in PDFs, text, Markdown, CSV, JSON or code. Rill indexes them locally and searches them when you ask. |
 | **Do maths properly** | Every calculation runs as JavaScript in a locked-down sandbox, so numbers are computed rather than guessed. |
