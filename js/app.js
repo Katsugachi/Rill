@@ -137,22 +137,23 @@ function loadCard() {
     line.append(h('span', { class: 'sq' }), h('span', { text: state.load.error + (state.settings.device !== 'wasm' ? ' You can switch to CPU in Settings.' : '') }),
       h('button', { class: 'link', type: 'button', onclick: loadModel }, 'Try again'));
   } else {
-    line.setAttribute('role', 'progressbar');
-    line.setAttribute('aria-label', 'Model download');
-    line.setAttribute('aria-valuemin', '0');
-    line.setAttribute('aria-valuemax', '100');
-    line.append(eddy(16, 'Loading'), h('b', { id: 'loadStage', text: state.load.stage || 'Loading the model' }), h('span', { class: 'dim', id: 'loadBytes' }));
+    const mark = eddy(16, 'Model download');
+    mark.id = 'loadMark';
+    mark.setAttribute('role', 'progressbar');
+    mark.setAttribute('aria-valuemin', '0');
+    mark.setAttribute('aria-valuemax', '100');
+    line.append(mark, h('b', { id: 'loadStage', text: state.load.stage || 'Loading the model' }), h('span', { class: 'dim', id: 'loadBytes' }));
   }
   return line;
 }
 
 function updateLoadCard() {
-  const card = $('loadCard');
-  if (!card || card.classList.contains('warn')) return;
+  const mark = $('loadMark');
+  if (!mark) return;
   let loaded = 0; let total = 0;
   for (const f of Object.values(state.load.files)) { loaded += f.loaded; total += f.total; }
   const pct = total ? Math.min(100, (loaded / total) * 100) : 0;
-  card.setAttribute('aria-valuenow', Math.round(pct));
+  mark.setAttribute('aria-valuenow', Math.round(pct));
   $('loadStage').textContent = state.load.stage || 'Loading';
   if (state.load.note && !total) $('loadBytes').textContent = state.load.note;
   if (total) $('loadBytes').textContent = `${fmtBytes(loaded)} of ${fmtBytes(total)} · ${Math.round(pct)}%`;
