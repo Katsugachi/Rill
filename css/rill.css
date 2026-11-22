@@ -158,9 +158,9 @@ body.focus .main { background: var(--bg); }
 .composer-wrap { flex: none; padding: 0 48px 24px; }
 
 /* Home: one block. The greeting is the only large text on the page. */
-body:not(.focus) .column { justify-content: center; padding-bottom: 16vh; }
+body:not(.focus) .column { justify-content: center; }
 body:not(.focus) .thread { display: none; }
-body:not(.focus) .composer-wrap { width: min(100%, 688px); margin-inline: auto; padding-inline: 24px; }
+body:not(.focus) .composer-wrap { width: min(100%, 688px); margin-inline: auto; padding: 0 24px; }
 .greeting { padding: 32px 24px 8px; }
 body.focus .greeting { display: none; }
 .welcome { animation: fade var(--med) var(--ease) both; }
@@ -404,8 +404,7 @@ h1.md-h, h2.md-h { font-size: var(--t-title); letter-spacing: -.015em; }
   body:not(.focus) .composer-bar { padding-inline: 12px; }
   .starters { padding-inline: 8px; }
   .plan-card { padding: 16px; }
-  body:not(.focus) .column { padding-bottom: 12vh; }
-  body:not(.focus) .composer-wrap { padding-inline: 12px; }
+  body:not(.focus) .composer-wrap { padding: 0 12px; }
   .msg-user { max-width: 90%; }
 }
 
