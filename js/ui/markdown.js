@@ -1,6 +1,7 @@
 // Safe Markdown → DOM renderer. Builds nodes with createElement/textContent
 // only; there is no innerHTML anywhere, so model or file text can never become
 // markup. Links are restricted to http(s)/mailto and open in a new tab.
+import { copyButton } from './dom.js';
 
 const SAFE_URL = /^(https?:|mailto:)/i;
 
@@ -58,13 +59,7 @@ function codeBlock(lang, code, opts) {
   const wrap = el('figure', 'md-pre');
   const bar = el('figcaption', 'md-pre-bar');
   bar.append(el('span', 'md-pre-lang', lang || 'text'));
-  const copy = el('button', 'md-copy', 'Copy');
-  copy.type = 'button';
-  copy.addEventListener('click', async () => {
-    try { await navigator.clipboard.writeText(code); copy.textContent = 'Copied'; } catch { copy.textContent = 'Copy failed'; }
-    setTimeout(() => { copy.textContent = 'Copy'; }, 1400);
-  });
-  bar.append(copy);
+  bar.append(copyButton(() => code, 'Copy code'));
   const pre = el('pre');
   pre.append(el('code', lang ? 'lang-' + lang.replace(/[^\w-]/g, '') : '', code));
   wrap.append(bar, pre);

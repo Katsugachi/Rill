@@ -30,6 +30,15 @@ the critique rounds that produced it.
    sits on a solid surface.
 10. **Motion explains a change.** 120ms for hover and press, 220ms for things that enter, open or
    move. One easing curve. `prefers-reduced-motion` turns it off.
+11. **One loading mark: a small eddy.** Every wait (the first token, reading a long conversation,
+   a running tool or plan step, the model download) shows the same letter-sized mark
+   (`js/ui/rill-loader.js`): three accent strokes curling out from a still centre, like water turning
+   in a rill. The eddy turns once every 3.2s while each stroke lengthens and draws back in turn, a third
+   of a beat apart, and the centre gently contracts, so it reads as moving water rather than a
+   spinning wheel. Known amounts (download, reading) are a plain percentage beside it, not a bar.
+   Under reduced motion it is a still eddy.
+12. **Secondary actions wait for hover.** Copy is a 15px icon in a 28px target, shown when the reply
+   or code block is hovered or focused (always on touch screens), so it is never read as part of the text.
 
 ## What keeps people oriented
 
@@ -75,6 +84,14 @@ now appears only while a load is running or after one fails. Removed the logo.
 **Round 6 (owner feedback).** The landscape image was replaced by two owner-supplied clips: clouds for
 light mode and a lighthouse at night for dark mode. Black borders in the files were cropped, and the
 clips were re-encoded to 0.9 MB and 1.8 MB. The dark clip is anchored right so the lighthouse stays in frame.
+
+**Round 7 (owner feedback).** The stop/send button sat 8px from the composer's 16px-radius corner and
+looked jammed; it now sits 12px in. "Copy" was body-sized grey text under every reply and read as part
+of the answer; it became a hover-only icon. The blinking squares used for loading were replaced by the
+drawn rill (rule 11).
+
+**Round 8 (owner feedback).** The drawn stream and its progress bars were too wide and broke the
+minimalism. Replaced with the letter-sized eddy in rule 11; download and reading progress became text.
 
 ## Known gaps
 

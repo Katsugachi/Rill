@@ -91,6 +91,21 @@ with sync_playwright() as p:
     check(all(s["status"] == "done" and s["result"] for s in plan["steps"]), "plan: every step done with a result")
     check(page.locator(".msg-assistant .md h2, .msg-assistant .md h3").count() > 0, "plan: summary rendered")
     check(page.locator(".caret").count() == 0 and page.locator(".typing").count() == 0, "no streaming indicators left after finishing")
+    check(page.evaluate("() => [...document.querySelectorAll('.eddy')].filter(r => r.getClientRects().length).length") == 0,
+          "no loading marks left after finishing")
+    reply = page.locator(".msg-assistant").last
+    btn = reply.locator(".copy-btn")
+    check(btn.count() == 1 and btn.get_attribute("aria-label") == "Copy" and btn.inner_text().strip() == "",
+          "copy is an icon-only button with a label")
+    page.mouse.move(0, 0)
+    page.wait_for_timeout(300)
+    idle = float(btn.evaluate("b => getComputedStyle(b).opacity"))
+    reply.hover()
+    page.wait_for_timeout(300)
+    shown = float(btn.evaluate("b => getComputedStyle(b).opacity"))
+    check(idle < 0.1 and shown > 0.9, f"copy hidden until hover ({idle} -> {shown})")
+    pad = page.evaluate("() => { const c = document.querySelector('.composer').getBoundingClientRect(), b = document.querySelector('#send').getBoundingClientRect(); return [c.right - b.right, c.bottom - b.bottom]; }")
+    check(min(pad) >= 12, f"send button inset from the composer corner {pad}")
     page.wait_for_timeout(3500)
     page.screenshot(path=f"{SHOTS}/04-plan-done.png")
 
