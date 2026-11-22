@@ -1,3 +1,4 @@
+import re
 """End-to-end checks with the mock engine (no GPU needed).
 
 Run:  python3 -m http.server 8080 &   then   python3 tests/e2e.py
@@ -93,6 +94,17 @@ with sync_playwright() as p:
     check(page.locator(".caret").count() == 0 and page.locator(".typing").count() == 0, "no streaming indicators left after finishing")
     check(page.evaluate("() => [...document.querySelectorAll('.eddy')].filter(r => r.getClientRects().length).length") == 0,
           "no loading marks left after finishing")
+    phase = page.evaluate("""async () => {
+      const { eddy } = await import('/js/ui/rill-loader.js');
+      const a = eddy(); document.body.append(a);
+      await new Promise(r => setTimeout(r, 700));
+      const b = eddy(); document.body.append(b);
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const look = (e) => [...e.querySelectorAll('.eddy-arm')].map(p => getComputedStyle(p).strokeDasharray).join('|') + getComputedStyle(e.querySelector('.eddy-turn')).transform;
+      const out = [look(a), look(b)]; a.remove(); b.remove(); return out;
+    }""")
+    nums = [[float(x) for x in re.findall(r"-?\d+\.?\d*", v)] for v in phase]
+    check(max(abs(x - y) for x, y in zip(*nums)) < 0.02, f"a re-rendered loading mark continues in phase {phase}")
     reply = page.locator(".msg-assistant").last
     btn = reply.locator(".copy-btn")
     check(btn.count() == 1 and btn.get_attribute("aria-label") == "Copy" and btn.inner_text().strip() == "",

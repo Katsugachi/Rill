@@ -233,9 +233,9 @@ body:not(.focus) .composer:not(.has-text) .starters { display: flex; }
 /* ---------- Loading mark: a small eddy (js/ui/rill-loader.js) ---------- */
 .eddy { display: inline-grid; place-items: center; flex: none; width: var(--s); height: var(--s); vertical-align: middle; color: var(--accent); }
 .eddy svg { width: 100%; height: 100%; overflow: visible; }
-.eddy-turn { transform-origin: 12px 12px; animation: eddy-turn 3.2s linear infinite; }
-.eddy-arm { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: .8 1; animation: eddy-breathe 1.6s var(--ease) infinite; animation-delay: calc(var(--i) * -0.533s); }
-.eddy-core { fill: currentColor; transform-origin: 12px 12px; animation: eddy-core 1.6s var(--ease) infinite; }
+.eddy-turn { transform-origin: 12px 12px; animation: eddy-turn 3.2s linear infinite; animation-delay: var(--t-turn, 0ms); }
+.eddy-arm { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: .8 1; animation: eddy-breathe 1.6s var(--ease) infinite; animation-delay: calc(var(--t-beat, 0ms) - var(--i) * 533ms); }
+.eddy-core { fill: currentColor; transform-origin: 12px 12px; animation: eddy-core 1.6s var(--ease) infinite; animation-delay: var(--t-beat, 0ms); }
 @keyframes eddy-turn { to { transform: rotate(360deg); } }
 @keyframes eddy-breathe { 0%, 100% { stroke-dasharray: .28 1; opacity: .55; } 50% { stroke-dasharray: .92 1; opacity: 1; } }
 @keyframes eddy-core { 0%, 100% { transform: scale(1); } 50% { transform: scale(.7); } }
