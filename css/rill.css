@@ -215,6 +215,9 @@ body:not(.focus) .composer:not(.has-text) .starters { display: flex; }
 .msg-assistant { position: relative; }
 .msg-meta { position: absolute; top: 100%; left: -6px; display: flex; align-items: center; gap: 8px; height: 28px; margin-top: 2px; font-size: var(--t-meta); color: var(--faint); }
 .msg-assistant:last-child { margin-bottom: 24px; }
+/* Keep the copy row clear of whatever follows (tool rows pull up by 12px). */
+.msg-assistant:has(> .msg-meta:not(:empty)):not(:last-child) { margin-bottom: 8px; }
+.msg-assistant:has(> .msg-meta:not(:empty)) + .tool { margin-top: 0; }
 .msg-meta:empty { display: none; }
 /* Copy stays out of the way until the reply is hovered or focused. */
 .copy-btn { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 6px; color: var(--faint); opacity: 0; transition: opacity var(--fast), color var(--fast), background var(--fast); }
